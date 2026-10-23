@@ -67,16 +67,17 @@ try {
     $tok = (gh auth token) 2>$null
     if (-not [string]::IsNullOrWhiteSpace($tok) -and $remoteUrl -match 'github\.com[:/]') {
         # دفعة مؤقتة برمز تسجيل gh (بدون تخزين دائم) ثم إعادة الرابط الأصلي
+        $prevEAP = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'   # حتى لا تكسر تحذيرات git على stderr السكربت
         $authUrl = $remoteUrl -replace 'https://github\.com', "https://hnyth50-gif:$tok@github.com"
         git remote set-url origin $authUrl
-        git push -u origin main --tags 2>&1 | Out-Null
+        git push -u origin main --tags *> $null
+        $code = $LASTEXITCODE
         git remote set-url origin $remoteUrl
-        if ($LASTEXITCODE -eq 0) {
+        $ErrorActionPreference = $prevEAP
+        if ($code -eq 0) {
             $pushed = $true
             Write-Output "✔ رُفعت اللقطة والوسم إلى GitHub."
-        }
-        else {
-            git remote set-url origin $remoteUrl
         }
     }
 }
