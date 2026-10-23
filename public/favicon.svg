@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Moallem Plus">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#115e59" />
+      <stop offset="1" stop-color="#0e7490" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)" />
+  <path d="M30 17c-4.5-3-11-4-16-2.2V45c5-1.8 11.5-.8 16 2.2V17z" fill="#ffffff" fill-opacity="0.92" />
+  <path d="M34 17c4.5-3 11-4 16-2.2V45c-5-1.8-11.5-.8-16 2.2V17z" fill="#99f6e4" />
+  <circle cx="49.5" cy="16.5" r="11" fill="#f59e0b" />
+  <path d="M49.5 10.5v12M43.5 16.5h12" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" />
+</svg>

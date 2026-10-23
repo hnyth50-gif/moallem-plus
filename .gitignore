@@ -1,0 +1,28 @@
+# الاعتماديات
+node_modules/
+
+# مخرجات البناء
+dist/
+dist-ssr/
+coverage/
+
+# ملفات محلية وحساسة
+*.local
+.env
+.env.*
+!.env.example
+
+# أنظمة التشغيل
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# أدوات التطوير
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.tgz
+*.log
