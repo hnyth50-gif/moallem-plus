@@ -7,7 +7,7 @@ import { makeId } from '../lib/id'
 import { validateCertificate } from '../lib/validate'
 import { CERT_TYPE_META, CERT_TYPES } from '../lib/certificates'
 import { GRADE_SUGGESTIONS } from '../lib/planEngine'
-import { formatDate } from '../lib/format'
+import { formatDate, formatIsoDateAr } from '../lib/format'
 import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Select, Spinner, Textarea, Badge } from '../components/UI'
 import { NotFoundLink } from './ActivityEditor'
 import { PrintFrame, printNow, SavePdfButton } from '../components/PrintFrame'
@@ -241,8 +241,18 @@ export function CertificateEditor() {
               ))}
             </div>
 
-            <Field label="تاريخ الإصدار" htmlFor="cert-date">
-              <Input id="cert-date" type="date" value={form.dateISO ?? ''} onChange={(e) => patch({ dateISO: e.target.value })} />
+            <Field
+              label="تاريخ الإصدار"
+              htmlFor="cert-date"
+              hint={form.dateISO ? `يقابل: ${formatIsoDateAr(form.dateISO)}` : 'اختر اليوم من تقويم المتصفح'}
+            >
+              <Input
+                id="cert-date"
+                type="date"
+                dir="ltr"
+                value={form.dateISO ?? ''}
+                onChange={(e) => patch({ dateISO: e.target.value })}
+              />
             </Field>
           </Card>
 

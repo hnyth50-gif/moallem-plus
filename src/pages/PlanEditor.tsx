@@ -11,7 +11,7 @@ import { StringListEditor } from '../components/StringListEditor'
 import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow, HintBox, SavePdfButton } from '../components/PrintFrame'
 import { AttachmentsEditor, PaperAttachments } from '../components/AttachmentsEditor'
 import { deleteFileBlobs } from '../lib/attachments'
-import { formatPoints, formatDateForPrint } from '../lib/format'
+import { formatPoints, formatDateForPrint, formatIsoDateAr } from '../lib/format'
 import { IconPlus, IconTrash, IconPrint } from '../components/icons'
 
 // ============ محرر خطة الدرس ============
@@ -175,8 +175,18 @@ export function PlanEditor() {
               <Field label="الوحدة / الموضوع" htmlFor="plan-unit">
                 <Input id="plan-unit" value={form.unit ?? ''} onChange={(e) => patch({ unit: e.target.value })} />
               </Field>
-              <Field label="تاريخ الحصة" htmlFor="plan-date">
-                <Input id="plan-date" type="date" value={form.classDate ?? ''} onChange={(e) => patch({ classDate: e.target.value })} />
+              <Field
+                label="تاريخ الحصة"
+                htmlFor="plan-date"
+                hint={form.classDate ? `يقابل: ${formatIsoDateAr(form.classDate)}` : 'اختر اليوم من تقويم المتصفح'}
+              >
+                <Input
+                  id="plan-date"
+                  type="date"
+                  dir="ltr"
+                  value={form.classDate ?? ''}
+                  onChange={(e) => patch({ classDate: e.target.value })}
+                />
               </Field>
               <Field label="مدة الحصة (دقيقة)" htmlFor="plan-duration" error={errors.durationMinutes}>
                 <Input

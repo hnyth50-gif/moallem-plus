@@ -44,6 +44,18 @@ export function formatDateForPrint(iso: string | undefined): string {
   return formatGregorianShort(ms)
 }
 
+/** صياغة تاريخ بصيغة ISO (YYYY-MM-DD) بالعربية الصريحة مثل «29 أكتوبر 2026» — لإزالة اللبس في حقول التاريخ */
+export function formatIsoDateAr(iso: string | undefined | null): string {
+  if (!iso) return ''
+  const ms = new Date(`${iso}T12:00:00`).getTime()
+  if (!Number.isFinite(ms)) return ''
+  try {
+    return dateFmt.format(new Date(ms))
+  } catch {
+    return ''
+  }
+}
+
 function formatGregorianShort(ms: number): string {
   try {
     return dateFmtShort.format(new Date(ms))
