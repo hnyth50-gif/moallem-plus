@@ -1,6 +1,8 @@
 import type {
   ActivityDoc,
   AppData,
+  Attachment,
+  AttachmentKind,
   CertificateDoc,
   CertificateType,
   PlanDoc,
@@ -11,6 +13,7 @@ import type {
   WeekEntryKind,
 } from './types'
 import { CARD_CATEGORIES, type CardCategory, type Difficulty, type QuestionKind } from './types'
+import { parseYouTubeId, youtubeWatchUrl, MAX_ATTACHMENTS, MAX_TEXT_LENGTH } from './attachments'
 import { emptyData } from './store'
 
 // ============ التحقق من صحة البيانات ============
@@ -167,6 +170,7 @@ function normalizePlan(raw: Record<string, unknown>): PlanDoc {
       : [],
     homework: str(raw.homework) || undefined,
     notes: str(raw.notes) || undefined,
+    attachments: normalizeAttachments(raw.attachments),
   }
 }
 
@@ -192,6 +196,7 @@ function normalizeActivity(raw: Record<string, unknown>): ActivityDoc {
     assessment: str(raw.assessment) || undefined,
     outcome: str(raw.outcome) || undefined,
     notes: str(raw.notes) || undefined,
+    attachments: normalizeAttachments(raw.attachments),
   }
 }
 
@@ -227,7 +232,34 @@ function normalizeQuiz(raw: Record<string, unknown>): QuizDoc {
     shuffle: raw.shuffle === true,
     mixOptions: raw.mixOptions === true,
     twoVersions: raw.twoVersions === true,
+    attachments: normalizeAttachments(raw.attachments),
   }
+}
+
+/** تطبيع قائمة المرفقات: أنواع معروفة فقط، ونصوص ضمن الحد، ويوتيوب بمعرّف صالح */
+function normalizeAttachments(v: unknown): Attachment[] | undefined {
+  if (!Array.isArray(v)) return undefined
+  const out: Attachment[] = []
+  for (const item of v.slice(0, MAX_ATTACHMENTS)) {
+    if (!isRecord(item)) continue
+    const id = str(item.id)
+    if (!id) continue
+    const kind: AttachmentKind =
+      item.kind === 'file' || item.kind === 'text' || item.kind === 'youtube' ? item.kind : 'text'
+    const base = { id, kind }
+    if (kind === 'file') {
+      out.push({ ...base, kind, name: str(item.name, 'ملف'), size: Math.max(0, num(item.size, 0)), mime: str(item.mime) || undefined })
+    } else if (kind === 'youtube') {
+      const videoId = str(item.videoId) || parseYouTubeId(str(item.url))
+      if (!videoId) continue
+      out.push({ ...base, kind, url: youtubeWatchUrl(videoId), videoId })
+    } else {
+      const text = str(item.text).trim().slice(0, MAX_TEXT_LENGTH)
+      if (!text) continue
+      out.push({ ...base, kind, text })
+    }
+  }
+  return out.length > 0 ? out : undefined
 }
 
 function normalizeCard(raw: Record<string, unknown>): ThinkingCard {

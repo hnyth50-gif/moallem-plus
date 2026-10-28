@@ -13,6 +13,7 @@ import { emptyData, removeFrom, upsertIn, downloadJson, mergeData, stripDemo } f
 import { loadAppState, saveAppState, SAVE_ERROR_MESSAGES } from '../lib/storage'
 import { applyDemoToData } from '../lib/seed'
 import { parseImport } from '../lib/validate'
+import { clearAllFileBlobs } from '../lib/attachments'
 import { useToast } from './ToastContext'
 import { makeId } from '../lib/id'
 
@@ -235,6 +236,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       d.weekEntries = []
       d.certificates = []
     })
+    void clearAllFileBlobs()
     toast('حُذفت جميع بياناتك المحلية.')
   }, [update, toast])
 

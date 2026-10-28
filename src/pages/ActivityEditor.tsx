@@ -10,6 +10,8 @@ import { validateActivity, dropEmptyStrings } from '../lib/validate'
 import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Textarea, Badge, Spinner } from '../components/UI'
 import { StringListEditor } from '../components/StringListEditor'
 import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow, SavePdfButton } from '../components/PrintFrame'
+import { AttachmentsEditor, PaperAttachments } from '../components/AttachmentsEditor'
+import { deleteFileBlobs } from '../lib/attachments'
 import { IconPlus, IconTrash, IconPrint, IconClock } from '../components/icons'
 import { formatPoints } from '../lib/format'
 import { GRADE_SUGGESTIONS, SUBJECT_SUGGESTIONS } from '../lib/planEngine'
@@ -239,6 +241,10 @@ export function ActivityEditor() {
             <StringListEditor label="الأدوات والمواد" items={form.materials} onChange={(materials) => patch({ materials })} placeholder="مثال: بطاقات ملونة" addLabel="إضافة أداة" itemNoun="أداة" />
           </Card>
 
+          <Card>
+            <AttachmentsEditor value={form.attachments ?? []} onChange={(attachments) => patch({ attachments })} />
+          </Card>
+
           <Card className="grid gap-4 sm:grid-cols-2">
             <Field label="نمط التجميع" htmlFor="act-grouping" hint="فردي، ثنائي، مجموعات، صف كامل…">
               <Input id="act-grouping" value={form.grouping ?? ''} onChange={(e) => patch({ grouping: e.target.value })} />
@@ -309,6 +315,7 @@ export function ActivityEditor() {
           <PaperSection title="الأدوات والمواد">
             <PaperList items={form.materials} />
           </PaperSection>
+          <PaperAttachments attachments={form.attachments} />
           {form.grouping && <PaperSection title="نمط التجميع"><p className="paper-line">{form.grouping}</p></PaperSection>}
           {form.assessment && <PaperSection title="التقويم"><p className="paper-line">{form.assessment}</p></PaperSection>}
           {form.outcome && <PaperSection title="الناتج المتوقع"><p className="paper-line">{form.outcome}</p></PaperSection>}
@@ -322,7 +329,10 @@ export function ActivityEditor() {
         confirmLabel="حذف نهائي"
         danger
         onConfirm={() => {
-          if (existing) deleteActivity(existing.id)
+          if (existing) {
+            void deleteFileBlobs(existing.attachments)
+            deleteActivity(existing.id)
+          }
           toast('حُذف النشاط.')
           navigate('/activities')
         }}

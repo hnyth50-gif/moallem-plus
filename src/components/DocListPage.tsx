@@ -1,7 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import type { ActivityDoc, PlanDoc, QuizDoc, ThinkingCard } from '../lib/types'
+import type { ActivityDoc, Attachment, PlanDoc, QuizDoc, ThinkingCard } from '../lib/types'
 import { sortByUpdated, matchesQuery, sortAlphabetically, type Doc } from '../lib/store'
+import { deleteFileBlobs } from '../lib/attachments'
 import { formatRelative } from '../lib/format'
 import { Badge, Button, Card, EmptyState, Input, Select, DemoBadge, PageHeader } from './UI'
 import { IconPlan, IconActivity, IconQuiz, IconSearch, IconPlus, IconCopy, IconTrash, IconEdit } from './icons'
@@ -17,6 +18,7 @@ type ListBase = {
   subject: string
   grade: string
   demo?: boolean
+  attachments?: Attachment[]
   createdAt: number
   updatedAt: number
 }
@@ -192,7 +194,10 @@ export function DocListPage<T extends ListBase>({ config }: { config: DocListCon
         confirmLabel="حذف نهائي"
         danger
         onConfirm={() => {
-          if (pendingDelete) config.onDelete(pendingDelete)
+          if (pendingDelete) {
+            void deleteFileBlobs(pendingDelete.attachments)
+            config.onDelete(pendingDelete)
+          }
           toast('تم الحذف.')
           setPendingDelete(null)
         }}

@@ -220,3 +220,26 @@ export const IconCertificate = (p: IconProps) => (
     <path d="M10 9l1.5 1.5L14.5 7" />
   </Base>
 )
+
+/** مشبك الورق — ترويسة قسم المرفقات */
+export const IconPaperclip = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M8.5 12.5l6.2-6.2a3.3 3.3 0 0 1 4.7 4.7l-8 8a5.3 5.3 0 0 1-7.5-7.5l7.4-7.4" />
+  </Base>
+)
+
+/** مستند عام — مرفق ملف */
+export const IconFile = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M6 3.5h8l4 4V20.5H6z" />
+    <path d="M14 3.5V8h4" />
+  </Base>
+)
+
+/** شعار يوتيوب مبسط خطي — مرفق فيديو */
+export const IconYouTube = (p: IconProps) => (
+  <Base {...p}>
+    <rect x="3" y="6" width="18" height="12" rx="3.5" />
+    <path d="M10.5 9.5v5l4.5-2.5z" />
+  </Base>
+)

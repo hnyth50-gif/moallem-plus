@@ -42,6 +42,26 @@ export interface PlanSection {
   description: string
 }
 
+export type AttachmentKind = 'file' | 'text' | 'youtube'
+
+/** مرفق مرتبط بمستند: ملف مخزن في IndexedDB، أو نص منسوخ، أو رابط يوتيوب */
+export interface Attachment {
+  id: string
+  kind: AttachmentKind
+  /** kind=file: اسم الملف الأصلي */
+  name?: string
+  /** kind=file: الحجم بالبايت */
+  size?: number
+  /** kind=file: نوع الملف (mime) */
+  mime?: string
+  /** kind=text: النص المنسوخ */
+  text?: string
+  /** kind=youtube: الرابط كما أُدخل */
+  url?: string
+  /** kind=youtube: معرّف الفيديو المستخرج */
+  videoId?: string
+}
+
 export interface PlanDoc {
   id: string
   kind: 'plan'
@@ -57,6 +77,8 @@ export interface PlanDoc {
   sections: PlanSection[]
   homework?: string
   notes?: string
+  /** مرفقات: ملفات ونصوص وروابط يوتيوب */
+  attachments?: Attachment[]
   createdAt: number
   updatedAt: number
 }
@@ -82,6 +104,7 @@ export interface ActivityDoc {
   assessment?: string
   outcome?: string
   notes?: string
+  attachments?: Attachment[]
   createdAt: number
   updatedAt: number
 }
@@ -100,6 +123,7 @@ export interface QuizDoc {
   shuffle: boolean
   mixOptions: boolean
   twoVersions: boolean
+  attachments?: Attachment[]
   createdAt: number
   updatedAt: number
 }

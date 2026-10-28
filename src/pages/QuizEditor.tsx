@@ -17,6 +17,8 @@ import {
 import { validateQuiz, dropEmptyQuestions, validateQuestion } from '../lib/validate'
 import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Select, Spinner, Textarea } from '../components/UI'
 import { PrintFrame, Paper, PaperHeader, printNow, SavePdfButton } from '../components/PrintFrame'
+import { AttachmentsEditor, PaperAttachments } from '../components/AttachmentsEditor'
+import { deleteFileBlobs } from '../lib/attachments'
 import { IconPlus, IconTrash, IconPrint, IconCopy, IconChevronDown, IconChevronUp } from '../components/icons'
 import { formatPoints, pointsLabel, arabicIndex } from '../lib/format'
 import { NotFoundLink } from './ActivityEditor'
@@ -310,6 +312,10 @@ export function QuizEditor() {
               </p>
             )}
           </Card>
+
+          <Card>
+            <AttachmentsEditor value={form.attachments ?? []} onChange={(attachments) => patch({ attachments })} />
+          </Card>
         </div>
 
         <aside className="xl:col-span-1">
@@ -343,7 +349,10 @@ export function QuizEditor() {
         confirmLabel="حذف نهائي"
         danger
         onConfirm={() => {
-          if (existing) deleteQuiz(existing.id)
+          if (existing) {
+            void deleteFileBlobs(existing.attachments)
+            deleteQuiz(existing.id)
+          }
           toast('حُذف الاختبار.')
           navigate('/quizzes')
         }}
@@ -617,7 +626,6 @@ function QuizPaper({ quiz, profile, mode }: { quiz: QuizDoc; profile: { name: st
 
   const showPaper = mode === 'paper' || mode === 'both'
   const showKey = mode === 'key' || mode === 'both'
-
   return (
     <>
       {showPaper &&
@@ -625,6 +633,7 @@ function QuizPaper({ quiz, profile, mode }: { quiz: QuizDoc; profile: { name: st
           <Paper key={`p${vi}`}>
             <div className="print-page-break" />
             {renderPaper(v.questions, false, v.label)}
+            {vi === versions.length - 1 && <PaperAttachments attachments={quiz.attachments} />}
           </Paper>
         ))}
       {showKey &&

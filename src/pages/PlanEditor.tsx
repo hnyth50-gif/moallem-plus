@@ -9,6 +9,8 @@ import { validatePlan, dropEmptyStrings } from '../lib/validate'
 import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Textarea } from '../components/UI'
 import { StringListEditor } from '../components/StringListEditor'
 import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow, HintBox, SavePdfButton } from '../components/PrintFrame'
+import { AttachmentsEditor, PaperAttachments } from '../components/AttachmentsEditor'
+import { deleteFileBlobs } from '../lib/attachments'
 import { formatPoints, formatDateForPrint } from '../lib/format'
 import { IconPlus, IconTrash, IconPrint } from '../components/icons'
 
@@ -274,6 +276,10 @@ export function PlanEditor() {
             <StringListEditor label="المواد والأدوات" items={form.resources} onChange={(resources) => patch({ resources })} placeholder="مثال: حاسوب وأوراق شراب" addLabel="إضافة مادة" itemNoun="مادة" />
           </Card>
 
+          <Card>
+            <AttachmentsEditor value={form.attachments ?? []} onChange={(attachments) => patch({ attachments })} />
+          </Card>
+
           <Card className="space-y-4">
             <Field label="الواجب المنزلي" htmlFor="plan-homework">
               <Textarea id="plan-homework" value={form.homework ?? ''} onChange={(e) => patch({ homework: e.target.value })} />
@@ -319,7 +325,10 @@ export function PlanEditor() {
         confirmLabel="حذف نهائي"
         danger
         onConfirm={() => {
-          if (existing) deletePlan(existing.id)
+          if (existing) {
+            void deleteFileBlobs(existing.attachments)
+            deletePlan(existing.id)
+          }
           toast('حُذفت الخطة.')
           navigate('/plans')
         }}
@@ -396,6 +405,7 @@ export function PlanPaper({ doc, profile }: { doc: PlanDoc; profile: { name: str
       <PaperSection title="الواجب المنزلي">
         <p className="paper-line">{doc.homework || '—'}</p>
       </PaperSection>
+      <PaperAttachments attachments={doc.attachments} />
       <div className="paper-sign">
         <span>توقيع المعلم: …………</span>
         <span>توقيع المشرف: …………</span>
