@@ -21,10 +21,13 @@ export function ClockWidget({ variant = 'header' }: { variant?: 'header' | 'full
 
   if (variant === 'header') {
     return (
-      <div className="hidden text-end leading-tight xl:block" aria-label="الوقت والتاريخ اليوم">
+      <div
+        className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-center leading-tight dark:border-slate-700 dark:bg-slate-800/60"
+        aria-label="الوقت والتاريخ اليوم"
+      >
         <p className="text-sm font-bold tabular-nums text-slate-800 dark:text-slate-100">{time}</p>
-        {hijri && <p className="text-[11px] text-slate-500 dark:text-slate-400">{hijri}</p>}
-        {gregorian && <p className="text-[11px] text-slate-400 dark:text-slate-500">{gregorian}</p>}
+        {hijri && <p className="mt-0.5 text-[11px] font-semibold text-brand-700 dark:text-brand-300">{hijri}</p>}
+        {gregorian && <p className="text-[10px] text-slate-400 dark:text-slate-500">{gregorian}</p>}
       </div>
     )
   }

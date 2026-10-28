@@ -188,7 +188,7 @@ export function Dashboard() {
 
           {/* بطاقة اليوم */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-24">
+            <Card className="sticky top-6">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">بطاقة اليوم</h2>
                 <Badge className={CATEGORY_COLORS[todayCard.category]}>{CATEGORY_LABELS[todayCard.category]}</Badge>

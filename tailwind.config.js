@@ -21,7 +21,7 @@ export default {
       },
       fontFamily: {
         sans: [
-          'Tajawal',
+          'Cairo',
           '"Segoe UI"',
           'Tahoma',
           '"Noto Kufi Arabic"',
