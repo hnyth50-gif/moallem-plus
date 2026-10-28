@@ -11,6 +11,7 @@ import { QuizEditor } from './pages/QuizEditor'
 import { CardsPage, CardDetail, CardCreate, CardEdit } from './pages/CardsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { NotFound } from './pages/NotFound'
+import { ToolsPage } from './pages/ToolsPage'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { InstallPrompt } from './components/InstallPrompt'
 
@@ -36,6 +37,7 @@ function Router() {
           <Route path="/cards/new" element={<CardCreate />} />
           <Route path="/cards/:id" element={<CardDetail />} />
           <Route path="/cards/:id/edit" element={<CardEdit />} />
+          <Route path="/tools" element={<ToolsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />

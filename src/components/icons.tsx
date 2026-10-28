@@ -192,3 +192,22 @@ export const IconRefresh = (p: IconProps) => (
     <path d="M19.7 3.5v3.8h-3.8" />
   </Base>
 )
+
+export const IconClock = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3.2 2" />
+  </Base>
+)
+
+export const IconPlay = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M8 5.5v13l10.5-6.5z" />
+  </Base>
+)
+
+export const IconPause = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M9 5.5v13M15 5.5v13" />
+  </Base>
+)

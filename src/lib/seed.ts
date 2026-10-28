@@ -1,4 +1,4 @@
-import type { ActivityDoc, AppData, PlanDoc, QuizDoc, ThinkingCard } from './types'
+import type { ActivityDoc, AppData, PlanDoc, QuizDoc, ThinkingCard, WeekEntry } from './types'
 import { makeId } from './id'
 import { distributeMinutes } from './planEngine'
 
@@ -19,6 +19,7 @@ export function createDemoData(_profileName = '', _school = ''): {
   activities: ActivityDoc[]
   quizzes: QuizDoc[]
   customCards: ThinkingCard[]
+  weekEntries: WeekEntry[]
 } {
   const subject = 'العلوم'
   const grade = 'الصف الخامس'
@@ -177,11 +178,44 @@ export function createDemoData(_profileName = '', _school = ''): {
     tips: 'غيّر الأدوار بالدورة كي يعيشها الجميع.',
   }
 
+  const weekEntries: WeekEntry[] = [
+    {
+      ...demoTimestamps(1),
+      id: makeId(DEMO_PREFIX),
+      kind: 'plan',
+      demo: true,
+      day: 0,
+      title: 'تجريبي: درس صور التنفس في النبات',
+      period: 'الحصة الثالثة',
+      refId: plan.id,
+    },
+    {
+      ...demoTimestamps(1),
+      id: makeId(DEMO_PREFIX),
+      kind: 'activity',
+      demo: true,
+      day: 1,
+      title: 'تجريبي: فكّر – زاوج – شارك',
+      period: 'الحصة الرابعة',
+      refId: activity.id,
+    },
+    {
+      ...demoTimestamps(1),
+      id: makeId(DEMO_PREFIX),
+      kind: 'note',
+      demo: true,
+      day: 3,
+      title: 'تجريبي: تحضير مواد مختبر الطابور',
+      period: 'قبل الطابور',
+    },
+  ]
+
   return {
     plans: [plan],
     activities: [activity],
     quizzes: [quiz],
     customCards: [card],
+    weekEntries,
   }
 }
 
@@ -194,6 +228,7 @@ export function applyDemoToData(base: AppData): AppData {
     activities: [...demo.activities, ...base.activities],
     quizzes: [...demo.quizzes, ...base.quizzes],
     customCards: [...demo.customCards, ...base.customCards],
+    weekEntries: [...demo.weekEntries, ...(base.weekEntries ?? [])],
   }
   return withDemo
 }

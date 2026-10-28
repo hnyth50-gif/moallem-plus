@@ -111,7 +111,6 @@ export type CardCategory =
   | 'organizers'
   | 'creativity'
   | 'rapid'
-
 export const CARD_CATEGORIES: CardCategory[] = [
   'cooperative',
   'metacognition',
@@ -135,6 +134,24 @@ export interface ThinkingCard {
   updatedAt: number
 }
 
+export type WeekEntryKind = 'plan' | 'activity' | 'quiz' | 'note'
+
+/** عنصر في المفكرة الأسبوعية: ربط يوم دراسي بمهمة أو بمستند جاهز (خطة/نشاط/اختبار) */
+export interface WeekEntry {
+  id: string
+  kind: WeekEntryKind
+  demo?: boolean
+  /** فهرس اليوم الدراسي (0 = الأحد) ضمن أيام الأسبوع الدراسي المعروضة */
+  day: number
+  title: string
+  /** وصف حر للحصة أو الوقت، مثل «الحصة الثالثة» */
+  period?: string
+  /** معرّف المستند المرتبط عند kind = plan/activity/quiz */
+  refId?: string
+  createdAt: number
+  updatedAt: number
+}
+
 export interface AppData {
   version: number
   savedAt: number
@@ -142,5 +159,6 @@ export interface AppData {
   activities: ActivityDoc[]
   quizzes: QuizDoc[]
   customCards: ThinkingCard[]
+  weekEntries: WeekEntry[]
   settings: Settings
 }

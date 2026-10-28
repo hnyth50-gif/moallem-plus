@@ -10,7 +10,7 @@ import { validateActivity, dropEmptyStrings } from '../lib/validate'
 import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Textarea, Badge, Spinner } from '../components/UI'
 import { StringListEditor } from '../components/StringListEditor'
 import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow } from '../components/PrintFrame'
-import { IconPlus, IconTrash, IconPrint } from '../components/icons'
+import { IconPlus, IconTrash, IconPrint, IconClock } from '../components/icons'
 import { formatPoints } from '../lib/format'
 import { GRADE_SUGGESTIONS, SUBJECT_SUGGESTIONS } from '../lib/planEngine'
 
@@ -106,6 +106,15 @@ export function ActivityEditor() {
         subtitle="اختر استراتيجية من المكتبة أو صمّم خطواتك بنفسك، ثم اطبع ورقة النشاط."
         actions={
           <>
+            {existing && (
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/tools?tab=timer&activity=${existing.id}`)}
+                title="شغّل خطوات النشاط بمؤقت حقيقي أمام الصف"
+              >
+                <IconClock className="h-4 w-4" /> تشغيل الخطوات
+              </Button>
+            )}
             <Button variant="outline" onClick={printNow}>
               <IconPrint className="h-4 w-4" /> طباعة
             </Button>

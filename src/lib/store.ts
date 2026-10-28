@@ -16,6 +16,7 @@ export function emptyData(): AppData {
     activities: [],
     quizzes: [],
     customCards: [],
+    weekEntries: [],
     settings: { profile: { name: '', school: '', semester: '' } },
   }
 }
@@ -70,6 +71,7 @@ export function stripDemo(data: AppData): AppData {
     activities: data.activities.filter((d) => !d.demo),
     quizzes: data.quizzes.filter((d) => !d.demo),
     customCards: data.customCards.filter((d) => !d.demo),
+    weekEntries: (data.weekEntries ?? []).filter((d) => !d.demo),
   }
 }
 
@@ -93,6 +95,7 @@ export function mergeData(local: AppData, incoming: AppData): AppData {
     activities: pick(local.activities ?? [], incoming.activities ?? []),
     quizzes: pick(local.quizzes ?? [], incoming.quizzes ?? []),
     customCards: pick(local.customCards ?? [], incoming.customCards ?? []),
+    weekEntries: pick(local.weekEntries ?? [], incoming.weekEntries ?? []),
     settings: useLocalProfile
       ? local.settings
       : incoming.settings ?? local.settings ?? { profile: { name: '', school: '', semester: '' } },

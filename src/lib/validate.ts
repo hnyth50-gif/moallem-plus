@@ -5,6 +5,8 @@ import type {
   QuizDoc,
   QuizQuestion,
   ThinkingCard,
+  WeekEntry,
+  WeekEntryKind,
 } from './types'
 import { CARD_CATEGORIES, type CardCategory, type Difficulty, type QuestionKind } from './types'
 import { emptyData } from './store'
@@ -73,6 +75,14 @@ export function validateCard(c: ThinkingCard): ModelErrors {
   const errors: ModelErrors = {}
   if (!c.title.trim()) errors.title = 'أدخل اسم البطاقة'
   if (!c.brief.trim()) errors.brief = 'اكتب تعريفًا موجزًا'
+  return errors
+}
+
+export function validateWeekEntry(w: WeekEntry): ModelErrors {
+  const errors: ModelErrors = {}
+  if (!w.title.trim()) errors.title = 'أدخل عنوان المهمة'
+  if (w.kind !== 'note' && !w.refId) errors.refId = 'اختر العنصر المرتبط'
+  if (!Number.isInteger(w.day) || w.day < 0 || w.day > 6) errors.day = 'اليوم غير صالح'
   return errors
 }
 
@@ -224,6 +234,23 @@ function normalizeCard(raw: Record<string, unknown>): ThinkingCard {
   }
 }
 
+function asWeekKind(v: unknown): WeekEntryKind {
+  return v === 'plan' || v === 'activity' || v === 'quiz' ? v : 'note'
+}
+
+function normalizeWeekEntry(raw: Record<string, unknown>): WeekEntry {
+  return {
+    ...timestamps(raw),
+    id: str(raw.id),
+    demo: raw.demo === true ? true : undefined,
+    kind: asWeekKind(raw.kind),
+    day: Math.min(6, Math.max(0, Math.round(num(raw.day, 0)))),
+    title: str(raw.title, 'مهمة بلا عنوان'),
+    period: str(raw.period) || undefined,
+    refId: str(raw.refId) || undefined,
+  }
+}
+
 export interface ImportResult {
   ok: boolean
   data?: AppData
@@ -246,6 +273,9 @@ export function parseImport(raw: unknown): ImportResult {
     customCards: Array.isArray(raw.customCards)
       ? raw.customCards.filter(isRecord).map(normalizeCard)
       : base.customCards,
+    weekEntries: Array.isArray(raw.weekEntries)
+      ? raw.weekEntries.filter(isRecord).map(normalizeWeekEntry)
+      : base.weekEntries,
     settings: { profile: { name: '', school: '', semester: '' } },
   }
   // الإعدادات (الملف الشخصي) إن وجدت سليمة
@@ -263,5 +293,6 @@ export function parseImport(raw: unknown): ImportResult {
   data.activities = data.activities.filter((d) => validId.test(d.id))
   data.quizzes = data.quizzes.filter((d) => validId.test(d.id))
   data.customCards = data.customCards.filter((d) => validId.test(d.id))
+  data.weekEntries = data.weekEntries.filter((d) => validId.test(d.id))
   return { ok: true, data }
 }
