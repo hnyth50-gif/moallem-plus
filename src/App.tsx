@@ -12,6 +12,7 @@ import { CardsPage, CardDetail, CardCreate, CardEdit } from './pages/CardsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { NotFound } from './pages/NotFound'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { InstallPrompt } from './components/InstallPrompt'
 
 // ============ جذر التطبيق ============
 // نستخدم HashRouter لأن الموقع ثابت على GitHub Pages الذي لا يدعم إعادة كتابة المسارات.
@@ -54,6 +55,8 @@ function Providers() {
           </DataProvider>
         </ToastProvider>
       </ThemeProvider>
+      {/* نافذة التثبيت مستقلة عن السياقات — ثابتة أسفل الشاشة */}
+      <InstallPrompt />
     </ErrorBoundary>
   )
 }

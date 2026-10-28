@@ -5,6 +5,7 @@ import type { AppData } from './types'
 
 export const STORAGE_KEY = 'moallem-plus:v1'
 export const THEME_KEY = 'moallem-plus:theme'
+export const INSTALL_PROMPT_KEY = 'moallem-plus:install-prompt'
 
 export interface SaveResult {
   ok: boolean
