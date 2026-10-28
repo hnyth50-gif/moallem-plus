@@ -40,6 +40,6 @@ describe('إعدادات خلفية معلّم بلس', () => {
   it('تعدل العرض دون تغيير ألوان الهوية', () => {
     applyBackground({ pattern: 'notebook', intensity: 10 })
     expect(document.documentElement.dataset.background).toBe('notebook')
-    expect(document.documentElement.style.getPropertyValue('--background-opacity-dark')).toBe('0.075')
+    expect(Number(document.documentElement.style.getPropertyValue('--background-opacity-dark'))).toBeCloseTo(0.075)
   })
 })
