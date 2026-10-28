@@ -34,6 +34,77 @@ body {
   outline-style: solid;
 }
 
+/* ==================== خلفيات تعليمية قابلة للتخصيص ==================== */
+/* تعتمد على mask بدل صورة ملونة؛ فتتبع تلقائيًا --brand-* المختار. */
+.app-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: rgb(var(--brand-700));
+  opacity: var(--background-opacity, 0.15);
+  -webkit-mask-size: 440px 320px;
+  mask-size: 440px 320px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-position: center top;
+  mask-position: center top;
+}
+.dark .app-shell::before {
+  background-color: rgb(var(--brand-300));
+  opacity: var(--background-opacity-dark, 0.1125);
+}
+.app-shell > main,
+.app-shell > footer {
+  position: relative;
+  z-index: 1;
+}
+[data-background='education'] .app-shell::before,
+.background-preview[data-background='education']::before {
+  -webkit-mask-image: url('./assets/backgrounds/education.svg');
+  mask-image: url('./assets/backgrounds/education.svg');
+}
+[data-background='concept'] .app-shell::before,
+.background-preview[data-background='concept']::before {
+  -webkit-mask-image: url('./assets/backgrounds/concept.svg');
+  mask-image: url('./assets/backgrounds/concept.svg');
+}
+[data-background='notebook'] .app-shell::before,
+.background-preview[data-background='notebook']::before {
+  -webkit-mask-image: url('./assets/backgrounds/notebook.svg');
+  mask-image: url('./assets/backgrounds/notebook.svg');
+}
+[data-background='none'] .app-shell::before,
+.background-preview[data-background='none']::before {
+  display: none;
+}
+
+/* مصغرات معاينة الخلفية في الإعدادات */
+.background-preview::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: rgb(var(--brand-700));
+  opacity: 0.3;
+  -webkit-mask-size: 180px 131px;
+  mask-size: 180px 131px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+.dark .background-preview::before {
+  background-color: rgb(var(--brand-300));
+  opacity: 0.38;
+}
+@media print {
+  .app-shell::before,
+  .background-preview::before {
+    display: none !important;
+  }
+}
+
 /* ==================== الطباعة ==================== */
 @media print {
   /* تخفي كل واجهة التطبيق؛ يظهر فقط #print-root */

@@ -92,7 +92,7 @@ export function Layout({ children }: { children: ReactNode }) {
   useEffect(() => setMenuOpen(false), [location.hash])
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+    <div className="app-shell relative isolate flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:right-2 z-50 rounded-lg bg-brand-700 px-3 py-1.5 text-sm text-white"

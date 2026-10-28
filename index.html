@@ -33,6 +33,21 @@
         } catch (e) {
           /* تجاهل */
         }
+        // تحميل الخلفية المحفوظة قبل أول رسم لتجنب الوميض.
+        try {
+          var rawBackground = localStorage.getItem('moallem-plus:background')
+          var background = rawBackground ? JSON.parse(rawBackground) : null
+          var patterns = ['education', 'concept', 'notebook', 'none']
+          var pattern = background && patterns.indexOf(background.pattern) !== -1 ? background.pattern : 'education'
+          var intensity = background && typeof background.intensity === 'number' && isFinite(background.intensity)
+            ? Math.max(0, Math.min(35, Math.round(background.intensity / 5) * 5))
+            : 15
+          document.documentElement.dataset.background = pattern
+          document.documentElement.style.setProperty('--background-opacity', String(intensity / 100))
+          document.documentElement.style.setProperty('--background-opacity-dark', String(intensity / 100 * 0.75))
+        } catch (e) {
+          document.documentElement.dataset.background = 'education'
+        }
       })()
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

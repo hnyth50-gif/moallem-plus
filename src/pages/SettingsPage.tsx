@@ -4,6 +4,7 @@ import { useTheme } from '../state/ThemeContext'
 import { useToast } from '../state/ToastContext'
 import { estimateKb } from '../lib/storage'
 import { ACCENTS, applyAccent, restoreAccent, saveAccent } from '../lib/accent'
+import { BackgroundPicker } from '../components/BackgroundPicker'
 import { Badge, Button, ConfirmDialog, Field, Input, Modal, PageHeader, Card } from '../components/UI'
 import { IconDownload, IconUpload, IconTrash, IconMoon, IconSun, IconRefresh, IconAlert } from '../components/icons'
 import { formatPoints } from '../lib/format'
@@ -154,6 +155,8 @@ export function SettingsPage() {
               ))}
             </div>
           </div>
+
+          <BackgroundPicker />
         </Card>
 
         {/* أدوات البيانات */}
