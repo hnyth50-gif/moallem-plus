@@ -11,3 +11,14 @@ createRoot(rootEl).render(
     <App />
   </StrictMode>,
 )
+
+// تسجيل عامل الخدمة بشروط: الإنتاج فقط (لا في التطوير)،
+// خارج إطارات المعاينة (iframe)، وباستثناء مسارات تسجيل الدخول وروابط OAuth
+if (import.meta.env.PROD && window.self === window.top) {
+  const excludedAuthPath = /\/(login|oauth|signin|signup|auth|callback)(\/|$)/i
+  if (!excludedAuthPath.test(window.location.pathname)) {
+    import('virtual:pwa-register').then(({ registerSW }) => {
+      registerSW({ immediate: true })
+    })
+  }
+}
