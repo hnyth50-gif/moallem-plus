@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Button } from './UI'
+import { Button, IconBadge } from './UI'
 import { IconClose, IconDownload } from './icons'
 import { INSTALL_PROMPT_KEY } from '../lib/storage'
 import { installUiAllowed } from '../lib/install'
@@ -153,12 +153,9 @@ export function InstallPrompt({ delayMs = 1600 }: { delayMs?: number } = {}) {
         entered ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0',
       )}
     >
-      <span
-        className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-700 text-white dark:bg-brand-600"
-        aria-hidden="true"
-      >
+      <IconBadge size="md" className="bg-brand-700 text-white ring-brand-700 dark:bg-brand-700 dark:text-white dark:ring-brand-700" aria-hidden="true">
         <IconDownload />
-      </span>
+      </IconBadge>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</p>
         <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">{desc}</p>

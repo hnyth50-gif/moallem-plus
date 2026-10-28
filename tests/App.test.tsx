@@ -124,7 +124,7 @@ describe('الساعة والتاريخ', () => {
     vi.setSystemTime(new Date(2026, 0, 1, 9, 5, 0))
     render(<App />)
 
-    // الساعة الكبيرة (وضع full) تُظهر الثواني وتتقدم كل ثانية
+    // الساعة الكبيرة (وضع full) تُظهر الثواني وتتقدم كل ثانية (أرقام غربية)
     const timer = screen.getByRole('timer')
     expect(timer.textContent).toContain('09:05:00')
     act(() => {

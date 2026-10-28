@@ -6,7 +6,8 @@ import { useData } from '../state/DataContext'
 import { cardById } from '../lib/lookup'
 import { computeTotalPoints } from '../lib/quizEngine'
 import { formatPoints, formatRelative } from '../lib/format'
-import { Badge, Card, EmptyState } from './UI'
+import { Badge, Card, EmptyState, IconBadge } from './UI'
+import { DocKindBadge } from './DocListPage'
 import { IconActivity, IconCards, IconPlan, IconQuiz } from './icons'
 
 // ============ المؤشرات ============
@@ -24,12 +25,6 @@ const KIND_META: Record<string, { label: string; bar: string }> = {
   tf: { label: 'صح / خطأ', bar: 'bg-cyan-500' },
   short: { label: 'إجابة قصيرة', bar: 'bg-violet-500' },
   essay: { label: 'مقالي', bar: 'bg-fuchsia-500' },
-}
-
-const DOC_META: Record<string, { label: string; badge: string; href: (id: string) => string }> = {
-  plan: { label: 'خطة', badge: 'bg-brand-100 text-brand-800 dark:bg-brand-900/50 dark:text-brand-200', href: (id) => `/plans/${id}` },
-  activity: { label: 'نشاط', badge: 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200', href: (id) => `/activities/${id}` },
-  quiz: { label: 'اختبار', badge: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200', href: (id) => `/quizzes/${id}` },
 }
 
 function Bar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
@@ -53,9 +48,7 @@ function StatCard({ icon, value, label, href }: { icon: ReactNode; value: number
       to={href}
       className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card transition-colors hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-700"
     >
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
-        {icon}
-      </span>
+      <IconBadge size="md">{icon}</IconBadge>
       <span>
         <span className="block text-2xl font-bold leading-7 tabular-nums text-slate-900 dark:text-white">
           {formatPoints(value)}
@@ -86,10 +79,10 @@ export function Insights() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
 
-    const docs: Array<Doc & { href: string }> = [
-      ...data.plans.map((d) => ({ ...d, href: `/plans/${d.id}` })),
-      ...data.activities.map((d) => ({ ...d, href: `/activities/${d.id}` })),
-      ...data.quizzes.map((d) => ({ ...d, href: `/quizzes/${d.id}` })),
+    const docs: Array<Doc & { href: string; kindLabel: string }> = [
+      ...data.plans.map((d) => ({ ...d, href: `/plans/${d.id}`, kindLabel: 'خطة' as const })),
+      ...data.activities.map((d) => ({ ...d, href: `/activities/${d.id}`, kindLabel: 'نشاط' as const })),
+      ...data.quizzes.map((d) => ({ ...d, href: `/quizzes/${d.id}`, kindLabel: 'اختبار' as const })),
     ]
     const recent = docs.sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 5)
 
@@ -190,12 +183,15 @@ export function Insights() {
                 className="flex items-center justify-between gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40"
               >
                 <span className="flex min-w-0 items-center gap-2">
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none ${DOC_META[d.kind].badge}`}>
-                    {DOC_META[d.kind].label}
-                  </span>
+                  <IconBadge size="sm">
+                    {d.kind === 'plan' ? <IconPlan /> : d.kind === 'activity' ? <IconActivity /> : <IconQuiz />}
+                  </IconBadge>
                   <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">{d.title}</span>
                 </span>
-                <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500">{formatRelative(d.updatedAt)}</span>
+                <span className="flex shrink-0 items-center gap-2">
+                  <DocKindBadge kind={d.kind} label={d.kindLabel} />
+                  <span className="text-xs text-slate-400 dark:text-slate-500">{formatRelative(d.updatedAt)}</span>
+                </span>
               </Link>
             </li>
           ))}

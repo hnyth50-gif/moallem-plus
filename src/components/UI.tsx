@@ -151,6 +151,36 @@ export function DemoBadge() {
   )
 }
 
+/**
+ * حاوية أيقونة موحدة لكل التطبيق: مربع مستدير بخلفية من لون الموقع
+ * وحلقة حدّية رقيقة — ثلاثة أحجام فقط لضمان التناسق في البطاقات والقوائم والفراغات.
+ */
+export function IconBadge({
+  children,
+  size = 'md',
+  className,
+}: {
+  children: ReactNode
+  size?: 'sm' | 'md' | 'lg'
+  className?: string
+}) {
+  return (
+    <span
+      className={cn(
+        'grid shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-inset ring-brand-200/70 dark:bg-brand-900/40 dark:text-brand-300 dark:ring-brand-800',
+        {
+          sm: 'h-9 w-9',
+          md: 'h-10 w-10',
+          lg: 'h-12 w-12',
+        }[size],
+        className,
+      )}
+    >
+      {children}
+    </span>
+  )
+}
+
 export function Spinner({ className }: { className?: string }) {
   return (
     <span
@@ -199,7 +229,11 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center dark:border-slate-600 dark:bg-slate-800/50">
-      {icon && <div className="mb-3 text-brand-600 dark:text-brand-300">{icon}</div>}
+      {icon && (
+        <div className="mb-3">
+          <IconBadge size="lg">{icon}</IconBadge>
+        </div>
+      )}
       <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h2>
       {description && (
         <p className="mt-1 max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">

@@ -1,15 +1,15 @@
-// تنسيق الأعداد والتواريخ بأسماء عربية وأرقام غربية (0-9).
-// تعيين nu-latn صراحة يمنع تحول الأرقام إلى الشكل الشرقي عند استخدام اللغة العربية.
-const NUMBER_LOCALE = 'ar-EG-u-nu-latn'
-const numberFmt = new Intl.NumberFormat(NUMBER_LOCALE)
-const dateFmt = new Intl.DateTimeFormat(NUMBER_LOCALE, {
+// أدوات تنسيق التواريخ والأرقام بالعربية (ميلادي) بأرقام غربية (0-9)
+// — «الأرقام العربية الغربية» أوضح للقراءة في التواريخ والعدادات والإحصاءات.
+const NUM_LOCALE = 'ar-EG-u-nu-latn'
+
+const dateFmt = new Intl.DateTimeFormat(NUM_LOCALE, {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
   calendar: 'gregory',
 })
 
-const dateFmtShort = new Intl.DateTimeFormat(NUMBER_LOCALE, {
+const dateFmtShort = new Intl.DateTimeFormat(NUM_LOCALE, {
   year: 'numeric',
   month: 'short',
   day: 'numeric',
@@ -69,7 +69,7 @@ export function formatRelative(ms: number, now = Date.now()): string {
 
 export function formatPoints(n: number): string {
   try {
-    return numberFmt.format(n)
+    return n.toLocaleString(NUM_LOCALE)
   } catch {
     return String(n)
   }
@@ -84,10 +84,10 @@ export function pointsLabel(n: number): string {
   return `${formatPoints(n)} نقطة`
 }
 
-/** مبدّل اختياري للأرقام في طباعة الاختبار */
+/** ترقيم أسئلة الطباعة بأرقام غربية: 1. 2. 3. */
 export function arabicIndex(n: number): string {
   try {
-    return numberFmt.format(n + 1)
+    return (n + 1).toLocaleString(NUM_LOCALE)
   } catch {
     return String(n + 1)
   }
@@ -100,7 +100,7 @@ export function dayKey(now = Date.now()): string {
 }
 
 /**
- * تنسيق مدة زمنية إلى م:ث (أو س:م:ث إن تجاوزت الساعة) بأرقام غربية
+ * تنسيق مدة زمنية إلى م:ث (أو س:م:ث إن تجاوزت الساعة) بأرقام لاتينية
  * — أوضح للعرض الكبير أمام الصف (المؤقت الصفي).
  */
 export function formatClock(totalSeconds: number): string {
@@ -135,7 +135,7 @@ let timeFmt: Intl.DateTimeFormat | null | undefined
 function getTimeFmt(): Intl.DateTimeFormat | null {
   if (timeFmt === undefined) {
     try {
-      timeFmt = new Intl.DateTimeFormat(NUMBER_LOCALE, {
+      timeFmt = new Intl.DateTimeFormat(NUM_LOCALE, {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',

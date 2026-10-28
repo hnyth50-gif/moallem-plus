@@ -212,6 +212,18 @@ export const KIND_LABEL: Record<Doc['kind'], string> = {
   quiz: 'اختبار',
 }
 
+/** ألوان شارات الأنواع — مصدر واحد تستخدمه كل الصفحات للتناسق */
+export const KIND_BADGE_CLASS: Record<Doc['kind'], string> = {
+  plan: 'bg-brand-100 text-brand-800 dark:bg-brand-900/50 dark:text-brand-200',
+  activity: 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200',
+  quiz: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200',
+}
+
+/** شارة نوع المستند (خطة/نشاط/اختبار) بشكل موحد */
+export function DocKindBadge({ kind, label }: { kind: Doc['kind']; label?: string }) {
+  return <Badge className={KIND_BADGE_CLASS[kind]}>{label ?? KIND_LABEL[kind]}</Badge>
+}
+
 export function DemoListTools({ demoCount, onRemove, onLoad }: { demoCount: number; onRemove: () => void; onLoad?: () => void }) {
   return (
     <div className="mb-4 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">

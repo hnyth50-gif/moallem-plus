@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { WeekEntry, WeekEntryKind } from '../lib/types'
 import { useData, newDoc } from '../state/DataContext'
 import { validateWeekEntry } from '../lib/validate'
+import { KIND_BADGE_CLASS } from './DocListPage'
 import { Button, Card, ConfirmDialog, Field, Input, Select } from './UI'
 import { IconCheck, IconClose, IconEdit, IconPlus, IconTrash } from './icons'
 import { cn } from '../lib/cn'
@@ -13,27 +14,11 @@ import { cn } from '../lib/cn'
 
 export const WEEK_DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس']
 
-const KIND_META: Record<WeekEntryKind, { label: string; badge: string; basePath: string | null }> = {
-  plan: {
-    label: 'خطة',
-    badge: 'bg-brand-100 text-brand-800 dark:bg-brand-900/50 dark:text-brand-200',
-    basePath: '/plans',
-  },
-  activity: {
-    label: 'نشاط',
-    badge: 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200',
-    basePath: '/activities',
-  },
-  quiz: {
-    label: 'اختبار',
-    badge: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200',
-    basePath: '/quizzes',
-  },
-  note: {
-    label: 'مهمة',
-    badge: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
-    basePath: null,
-  },
+const KIND_META: Record<WeekEntryKind, { label: string; basePath: string | null }> = {
+  plan: { label: 'خطة', basePath: '/plans' },
+  activity: { label: 'نشاط', basePath: '/activities' },
+  quiz: { label: 'اختبار', basePath: '/quizzes' },
+  note: { label: 'مهمة', basePath: null },
 }
 
 interface FormState {
@@ -260,7 +245,14 @@ export function WeeklyPlanner() {
                       aria-label={clickable ? `${meta.label}: ${entry.title} — فتح` : undefined}
                     >
                       <div className="flex items-start justify-between gap-1.5">
-                        <span className={cn('inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold leading-none', meta.badge)}>
+                        <span
+                          className={cn(
+                            'inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold leading-none',
+                            entry.kind === 'note'
+                              ? 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                              : KIND_BADGE_CLASS[entry.kind],
+                          )}
+                        >
                           {meta.label}
                         </span>
                         <span className="flex opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">

@@ -265,7 +265,7 @@ export function PlanEditor() {
             </ul>
             <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
               مجموع الدقائق حاليًا: {formatPoints(form.sections.reduce((m, s) => m + (Number(s.minutes) || 0), 0))} — المقترح: {' '}
-              {formatPoints(form.durationMinutes ?? 45)}
+              {(form.durationMinutes ?? 45).toLocaleString('ar-EG-u-nu-latn')}
             </p>
           </Card>
 
