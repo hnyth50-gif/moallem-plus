@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { ActivityDoc, AppData, PlanDoc, QuizDoc, Settings, ThinkingCard, WeekEntry } from '../lib/types'
+import type { ActivityDoc, AppData, CertificateDoc, PlanDoc, QuizDoc, Settings, ThinkingCard, WeekEntry } from '../lib/types'
 import { emptyData, removeFrom, upsertIn, downloadJson, mergeData, stripDemo } from '../lib/store'
 import { loadAppState, saveAppState, SAVE_ERROR_MESSAGES } from '../lib/storage'
 import { applyDemoToData } from '../lib/seed'
@@ -30,11 +30,13 @@ interface DataContextValue {
   saveQuiz: (doc: QuizDoc) => void
   saveCard: (doc: ThinkingCard) => void
   saveWeekEntry: (doc: WeekEntry) => void
+  saveCertificate: (doc: CertificateDoc) => void
   deletePlan: (id: string) => void
   deleteActivity: (id: string) => void
   deleteQuiz: (id: string) => void
   deleteCard: (id: string) => void
   deleteWeekEntry: (id: string) => void
+  deleteCertificate: (id: string) => void
   clearWeekEntries: () => void
   updateProfile: (p: Partial<Profile>) => void
   exportBackup: () => void
@@ -85,6 +87,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           quizzes: [...prev.quizzes],
           customCards: [...prev.customCards],
           weekEntries: [...(prev.weekEntries ?? [])],
+          certificates: [...(prev.certificates ?? [])],
           settings: { profile: { ...prev.settings.profile } },
         }
         mutator(draft)
@@ -116,6 +119,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     (doc: WeekEntry) => update((d) => (d.weekEntries = upsertIn(d.weekEntries ?? [], doc))),
     [update],
   )
+  const saveCertificate = useCallback(
+    (doc: CertificateDoc) => update((d) => (d.certificates = upsertIn(d.certificates ?? [], doc))),
+    [update],
+  )
 
   const deletePlan = useCallback(
     (id: string) => update((d) => (d.plans = removeFrom(d.plans, id))),
@@ -135,6 +142,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   )
   const deleteWeekEntry = useCallback(
     (id: string) => update((d) => (d.weekEntries = removeFrom(d.weekEntries ?? [], id))),
+    [update],
+  )
+  const deleteCertificate = useCallback(
+    (id: string) => update((d) => (d.certificates = removeFrom(d.certificates ?? [], id))),
     [update],
   )
   const clearWeekEntries = useCallback(
@@ -171,6 +182,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           d.quizzes = merged.quizzes
           d.customCards = merged.customCards
           d.weekEntries = merged.weekEntries
+          d.certificates = merged.certificates
           d.settings.profile = merged.settings.profile
         } else {
           d.plans = result.data!.plans
@@ -178,6 +190,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           d.quizzes = result.data!.quizzes
           d.customCards = result.data!.customCards
           d.weekEntries = result.data!.weekEntries
+          d.certificates = result.data!.certificates
           d.settings.profile = result.data!.settings.profile
         }
       })
@@ -195,6 +208,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       d.quizzes = demo.quizzes
       d.customCards = demo.customCards
       d.weekEntries = demo.weekEntries
+      d.certificates = demo.certificates
     })
     toast('أُضيفت عناصر تجريبية علامات «تجريبي» فيها — احذفها متى شئت من الإعدادات.')
   }, [update, toast])
@@ -207,6 +221,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       d.quizzes = clean.quizzes
       d.customCards = clean.customCards
       d.weekEntries = clean.weekEntries
+      d.certificates = clean.certificates
     })
     toast('أُزيلت جميع العناصر التجريبية.')
   }, [update, toast])
@@ -218,6 +233,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       d.quizzes = []
       d.customCards = []
       d.weekEntries = []
+      d.certificates = []
     })
     toast('حُذفت جميع بياناتك المحلية.')
   }, [update, toast])
@@ -231,11 +247,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       saveQuiz,
       saveCard,
       saveWeekEntry,
+      saveCertificate,
       deletePlan,
       deleteActivity,
       deleteQuiz,
       deleteCard,
       deleteWeekEntry,
+      deleteCertificate,
       clearWeekEntries,
       updateProfile,
       exportBackup,
@@ -252,11 +270,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       saveQuiz,
       saveCard,
       saveWeekEntry,
+      saveCertificate,
       deletePlan,
       deleteActivity,
       deleteQuiz,
       deleteCard,
       deleteWeekEntry,
+      deleteCertificate,
       clearWeekEntries,
       updateProfile,
       exportBackup,

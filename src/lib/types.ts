@@ -152,6 +152,23 @@ export interface WeekEntry {
   updatedAt: number
 }
 
+export type CertificateType = 'thanks' | 'excellence' | 'motivation'
+
+/** شهادة طالب: شكر وتقدير أو تفوق أو تحفيز — تُطبع أفقيًا أو تُحفظ PDF */
+export interface CertificateDoc {
+  id: string
+  demo?: boolean
+  type: CertificateType
+  studentName: string
+  grade?: string
+  /** سبب التقدير (نص حر) */
+  reason: string
+  /** تاريخ الإصدار بصيغة yyyy-mm-dd */
+  dateISO?: string
+  createdAt: number
+  updatedAt: number
+}
+
 export interface AppData {
   version: number
   savedAt: number
@@ -160,5 +177,6 @@ export interface AppData {
   quizzes: QuizDoc[]
   customCards: ThinkingCard[]
   weekEntries: WeekEntry[]
+  certificates: CertificateDoc[]
   settings: Settings
 }

@@ -17,6 +17,7 @@ export function emptyData(): AppData {
     quizzes: [],
     customCards: [],
     weekEntries: [],
+    certificates: [],
     settings: { profile: { name: '', school: '', semester: '' } },
   }
 }
@@ -72,6 +73,7 @@ export function stripDemo(data: AppData): AppData {
     quizzes: data.quizzes.filter((d) => !d.demo),
     customCards: data.customCards.filter((d) => !d.demo),
     weekEntries: (data.weekEntries ?? []).filter((d) => !d.demo),
+    certificates: (data.certificates ?? []).filter((d) => !d.demo),
   }
 }
 
@@ -96,6 +98,7 @@ export function mergeData(local: AppData, incoming: AppData): AppData {
     quizzes: pick(local.quizzes ?? [], incoming.quizzes ?? []),
     customCards: pick(local.customCards ?? [], incoming.customCards ?? []),
     weekEntries: pick(local.weekEntries ?? [], incoming.weekEntries ?? []),
+    certificates: pick(local.certificates ?? [], incoming.certificates ?? []),
     settings: useLocalProfile
       ? local.settings
       : incoming.settings ?? local.settings ?? { profile: { name: '', school: '', semester: '' } },

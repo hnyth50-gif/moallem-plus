@@ -1,6 +1,8 @@
 import type {
   ActivityDoc,
   AppData,
+  CertificateDoc,
+  CertificateType,
   PlanDoc,
   QuizDoc,
   QuizQuestion,
@@ -83,6 +85,15 @@ export function validateWeekEntry(w: WeekEntry): ModelErrors {
   if (!w.title.trim()) errors.title = 'أدخل عنوان المهمة'
   if (w.kind !== 'note' && !w.refId) errors.refId = 'اختر العنصر المرتبط'
   if (!Number.isInteger(w.day) || w.day < 0 || w.day > 6) errors.day = 'اليوم غير صالح'
+  return errors
+}
+
+export function validateCertificate(c: CertificateDoc): ModelErrors {
+  const errors: ModelErrors = {}
+  if (!c.studentName.trim()) errors.studentName = 'أدخل اسم الطالب'
+  if (c.studentName.trim().length > 60) errors.studentName = 'الاسم طويل جدًا (60 حرفًا كحد أقصى)'
+  if (!c.reason.trim()) errors.reason = 'أدخل سبب التقدير'
+  if (c.reason.trim().length > 300) errors.reason = 'السبب طويل جدًا (300 حرف كحد أقصى)'
   return errors
 }
 
@@ -238,6 +249,23 @@ function asWeekKind(v: unknown): WeekEntryKind {
   return v === 'plan' || v === 'activity' || v === 'quiz' ? v : 'note'
 }
 
+function asCertificateType(v: unknown): CertificateType {
+  return v === 'thanks' || v === 'excellence' || v === 'motivation' ? v : 'thanks'
+}
+
+function normalizeCertificate(raw: Record<string, unknown>): CertificateDoc {
+  return {
+    ...timestamps(raw),
+    id: str(raw.id),
+    demo: raw.demo === true ? true : undefined,
+    type: asCertificateType(raw.type),
+    studentName: str(raw.studentName, 'طالب'),
+    grade: str(raw.grade) || undefined,
+    reason: str(raw.reason),
+    dateISO: str(raw.dateISO) || undefined,
+  }
+}
+
 function normalizeWeekEntry(raw: Record<string, unknown>): WeekEntry {
   return {
     ...timestamps(raw),
@@ -276,6 +304,9 @@ export function parseImport(raw: unknown): ImportResult {
     weekEntries: Array.isArray(raw.weekEntries)
       ? raw.weekEntries.filter(isRecord).map(normalizeWeekEntry)
       : base.weekEntries,
+    certificates: Array.isArray(raw.certificates)
+      ? raw.certificates.filter(isRecord).map(normalizeCertificate)
+      : base.certificates,
     settings: { profile: { name: '', school: '', semester: '' } },
   }
   // الإعدادات (الملف الشخصي) إن وجدت سليمة
@@ -294,5 +325,6 @@ export function parseImport(raw: unknown): ImportResult {
   data.quizzes = data.quizzes.filter((d) => validId.test(d.id))
   data.customCards = data.customCards.filter((d) => validId.test(d.id))
   data.weekEntries = data.weekEntries.filter((d) => validId.test(d.id))
+  data.certificates = data.certificates.filter((d) => validId.test(d.id))
   return { ok: true, data }
 }

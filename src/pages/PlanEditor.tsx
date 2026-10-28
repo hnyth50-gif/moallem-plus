@@ -8,7 +8,7 @@ import { GRADE_SUGGESTIONS, PLAN_PHASES, SUBJECT_SUGGESTIONS, distributeMinutes,
 import { validatePlan, dropEmptyStrings } from '../lib/validate'
 import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Textarea } from '../components/UI'
 import { StringListEditor } from '../components/StringListEditor'
-import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow, HintBox } from '../components/PrintFrame'
+import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow, HintBox, SavePdfButton } from '../components/PrintFrame'
 import { formatPoints, formatDateForPrint } from '../lib/format'
 import { IconPlus, IconTrash, IconPrint } from '../components/icons'
 
@@ -132,6 +132,7 @@ export function PlanEditor() {
             <Button variant="outline" onClick={printNow}>
               <IconPrint className="h-4 w-4" /> طباعة الخطة
             </Button>
+            <SavePdfButton label="حفظ الخطة PDF" />
             <Button onClick={handleSave}>حفظ</Button>
             {existing && (
               <Button variant="ghost" className="text-rose-600 dark:text-rose-400" onClick={() => setConfirmDelete(true)}>

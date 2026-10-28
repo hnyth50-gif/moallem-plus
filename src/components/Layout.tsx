@@ -4,7 +4,7 @@ import { useTheme } from '../state/ThemeContext'
 import { cn } from '../lib/cn'
 import { Button } from './UI'
 import { ClockWidget } from './ClockWidget'
-import { IconHome, IconPlan, IconActivity, IconQuiz, IconCards, IconSettings, IconMenu, IconClose, IconSun, IconMoon, IconClock } from './icons'
+import { IconHome, IconPlan, IconActivity, IconQuiz, IconCards, IconSettings, IconMenu, IconClose, IconSun, IconMoon, IconClock, IconCertificate } from './icons'
 
 // ============ التخطيط العام ============
 // ترويسة لاصقة + قائمة يراعي شاشات الجوال، وشعار داكن/فاتح، وتذييل الخصوصية.
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { to: '/activities', label: 'الأنشطة', icon: IconActivity },
   { to: '/quizzes', label: 'الاختبارات', icon: IconQuiz },
   { to: '/cards', label: 'بطاقات التفكير', icon: IconCards },
+  { to: '/certificates', label: 'الشهادات', icon: IconCertificate },
   { to: '/tools', label: 'أدوات الصف', icon: IconClock },
   { to: '/settings', label: 'الإعدادات', icon: IconSettings },
 ]

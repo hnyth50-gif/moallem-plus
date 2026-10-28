@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react'
+import { useToast } from '../state/ToastContext'
+import { Button } from './UI'
+import { IconDownload } from './icons'
 import { cn } from '../lib/cn'
 
 // ============ إطار الطباعة ============
@@ -16,6 +19,27 @@ export function PrintFrame({ children }: { children: ReactNode }) {
 
 export function printNow(): void {
   window.print()
+}
+
+/**
+ * زر «حفظ PDF»: يفتح نافذة الطباعة الأصلية للمتصفح ليختار المستخدم
+ * وجهة «حفظ بـ PDF» — تحافظ على تشكيل العربية وجودتها متجهيًا دون مكتبات إضافية.
+ */
+export function SavePdfButton({ className, label = 'حفظ PDF' }: { className?: string; label?: string }) {
+  const { toast } = useToast()
+  return (
+    <Button
+      variant="outline"
+      className={className}
+      title="يفتح نافذة الطباعة لاختيار وجهة «حفظ بـ PDF»"
+      onClick={() => {
+        toast('في نافذة الطباعة اختر الوجهة «حفظ بـ PDF» ثم احفظ الملف على جهازك.')
+        window.setTimeout(() => window.print(), 450)
+      }}
+    >
+      <IconDownload className="h-4 w-4" /> {label}
+    </Button>
+  )
 }
 
 /* — الحاويات الورقية لطبقة الطباعة — */

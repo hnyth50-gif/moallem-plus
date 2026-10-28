@@ -16,7 +16,7 @@ import {
 } from '../lib/quizEngine'
 import { validateQuiz, dropEmptyQuestions, validateQuestion } from '../lib/validate'
 import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Select, Spinner, Textarea } from '../components/UI'
-import { PrintFrame, Paper, PaperHeader, printNow } from '../components/PrintFrame'
+import { PrintFrame, Paper, PaperHeader, printNow, SavePdfButton } from '../components/PrintFrame'
 import { IconPlus, IconTrash, IconPrint, IconCopy, IconChevronDown, IconChevronUp } from '../components/icons'
 import { formatPoints, pointsLabel, arabicIndex } from '../lib/format'
 import { NotFoundLink } from './ActivityEditor'
@@ -171,6 +171,7 @@ export function QuizEditor() {
             <Button variant="outline" onClick={printNow}>
               <IconPrint className="h-4 w-4" /> طباعة
             </Button>
+            <SavePdfButton />
             <Button onClick={handleSave}>حفظ</Button>
             {existing && (
               <Button variant="ghost" className="text-rose-600 dark:text-rose-400" onClick={() => setConfirmDelete(true)}>

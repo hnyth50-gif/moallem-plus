@@ -318,3 +318,162 @@ body {
   font-size: 10.5pt;
   color: #374151;
 }
+
+/* ==================== شهادات الطلاب ==================== */
+/* معاينة حية في المحرر + ورقة طباعة أفقية (A4 landscape يُحقن من محرر الشهادة).
+   الألوان مبنية على متغيرات --brand لتتبع لون الموقع المختار تلقائيًا. */
+.cert-sheet {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 297 / 210;
+  background: white;
+  color: #111827;
+  font-family: Tajawal, 'Segoe UI', Tahoma, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding: 6.5% 7%;
+  overflow: hidden;
+}
+
+.cert-frame {
+  position: absolute;
+  inset: 2.4%;
+  border: 2.5pt solid rgb(var(--brand-700));
+  pointer-events: none;
+}
+
+.cert-frame::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 0.75pt solid rgb(var(--brand-400));
+}
+
+.cert-corner {
+  position: absolute;
+  color: rgb(var(--brand-500));
+  font-size: 13pt;
+  line-height: 1;
+  pointer-events: none;
+}
+.cert-tr { top: 3.6%; right: 3.8%; }
+.cert-tl { top: 3.6%; left: 3.8%; }
+.cert-br { bottom: 3.6%; right: 3.8%; }
+.cert-bl { bottom: 3.6%; left: 3.8%; }
+
+.cert-body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 0;
+}
+
+.cert-country,
+.cert-ministry {
+  font-size: 9.5pt;
+  color: #4b5563;
+  line-height: 1.5;
+}
+.cert-school {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: rgb(var(--brand-800));
+  margin-bottom: 2.5%;
+}
+
+.cert-title {
+  font-size: 21pt;
+  font-weight: 800;
+  color: rgb(var(--brand-800));
+  margin: 0;
+  line-height: 1.3;
+}
+
+.cert-flourish {
+  color: rgb(var(--brand-500));
+  font-size: 10pt;
+  letter-spacing: 0.3em;
+  margin: 1% 0 2.5%;
+}
+
+.cert-opening {
+  font-size: 12pt;
+  color: #374151;
+  margin: 0 0 1%;
+}
+
+.cert-name {
+  font-size: 24pt;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  border-bottom: 2.5pt double rgb(var(--brand-500));
+  padding: 0 4% 0.6%;
+}
+
+.cert-grade {
+  font-size: 10.5pt;
+  color: #4b5563;
+  margin: 1.4% 0 0;
+}
+
+.cert-reason {
+  font-size: 12.5pt;
+  line-height: 1.9;
+  color: #1f2937;
+  margin: 2% 0 0;
+  max-width: 82%;
+}
+
+.cert-wish {
+  font-size: 11pt;
+  color: rgb(var(--brand-700));
+  font-weight: 700;
+  margin-top: auto;
+  padding-top: 1.5%;
+}
+
+.cert-footer {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5%;
+  padding-top: 1.5%;
+  border-top: 1px solid #d1d5db;
+}
+
+.cert-date {
+  font-size: 10pt;
+  color: #4b5563;
+}
+
+.cert-sig {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 8rem;
+}
+.cert-sig-name {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: #1f2937;
+}
+.cert-sig-role {
+  font-size: 9.5pt;
+  color: #6b7280;
+}
+
+@media print {
+  .cert-sheet {
+    aspect-ratio: auto;
+    min-height: 182mm;
+    padding: 8mm 10mm;
+  }
+}

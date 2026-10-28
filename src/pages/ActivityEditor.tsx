@@ -9,7 +9,7 @@ import { cardById } from '../lib/lookup'
 import { validateActivity, dropEmptyStrings } from '../lib/validate'
 import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Textarea, Badge, Spinner } from '../components/UI'
 import { StringListEditor } from '../components/StringListEditor'
-import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow } from '../components/PrintFrame'
+import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow, SavePdfButton } from '../components/PrintFrame'
 import { IconPlus, IconTrash, IconPrint, IconClock } from '../components/icons'
 import { formatPoints } from '../lib/format'
 import { GRADE_SUGGESTIONS, SUBJECT_SUGGESTIONS } from '../lib/planEngine'
@@ -118,6 +118,7 @@ export function ActivityEditor() {
             <Button variant="outline" onClick={printNow}>
               <IconPrint className="h-4 w-4" /> طباعة
             </Button>
+            <SavePdfButton />
             <Button onClick={handleSave}>حفظ</Button>
             {existing && (
               <Button variant="ghost" className="text-rose-600 dark:text-rose-400" onClick={() => setConfirmDelete(true)}>

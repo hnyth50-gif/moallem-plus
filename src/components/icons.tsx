@@ -211,3 +211,12 @@ export const IconPause = (p: IconProps) => (
     <path d="M9 5.5v13M15 5.5v13" />
   </Base>
 )
+
+/** أيقونة شهادة: ميدالية بشريطي وسام */
+export const IconCertificate = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="12" cy="9" r="5.2" />
+    <path d="M9.5 13.2 8 20l4-2.2L16 20l-1.5-6.8" />
+    <path d="M10 9l1.5 1.5L14.5 7" />
+  </Base>
+)

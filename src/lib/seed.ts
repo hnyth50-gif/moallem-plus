@@ -1,4 +1,4 @@
-import type { ActivityDoc, AppData, PlanDoc, QuizDoc, ThinkingCard, WeekEntry } from './types'
+import type { ActivityDoc, AppData, CertificateDoc, PlanDoc, QuizDoc, ThinkingCard, WeekEntry } from './types'
 import { makeId } from './id'
 import { distributeMinutes } from './planEngine'
 
@@ -20,6 +20,7 @@ export function createDemoData(_profileName = '', _school = ''): {
   quizzes: QuizDoc[]
   customCards: ThinkingCard[]
   weekEntries: WeekEntry[]
+  certificates: CertificateDoc[]
 } {
   const subject = 'العلوم'
   const grade = 'الصف الخامس'
@@ -210,12 +211,26 @@ export function createDemoData(_profileName = '', _school = ''): {
     },
   ]
 
+  const certificates: CertificateDoc[] = [
+    {
+      ...demoTimestamps(1),
+      id: makeId(DEMO_PREFIX),
+      demo: true,
+      type: 'excellence',
+      studentName: 'سارة عبدالله الأحمد',
+      grade: 'الصف الخامس الابتدائي',
+      reason: 'لتفوقها المتميز في مادة العلوم ومشاركتها الفعالة داخل الصف طوال الفصل الدراسي.',
+      dateISO: new Date().toISOString().slice(0, 10),
+    },
+  ]
+
   return {
     plans: [plan],
     activities: [activity],
     quizzes: [quiz],
     customCards: [card],
     weekEntries,
+    certificates,
   }
 }
 
@@ -229,6 +244,7 @@ export function applyDemoToData(base: AppData): AppData {
     quizzes: [...demo.quizzes, ...base.quizzes],
     customCards: [...demo.customCards, ...base.customCards],
     weekEntries: [...demo.weekEntries, ...(base.weekEntries ?? [])],
+    certificates: [...demo.certificates, ...(base.certificates ?? [])],
   }
   return withDemo
 }

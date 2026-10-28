@@ -32,10 +32,10 @@ describe('الصفحة الرئيسية', () => {
     expect(window.location.hash).toBe('#/')
   })
 
-  it('روابط التنقل الرئيسية سبعة ظاهرة في الهيدر', () => {
+  it('روابط التنقل الرئيسية ثمانية ظاهرة في الهيدر', () => {
     render(<App />)
     const nav = screen.getByRole('navigation', { name: 'التنقل الرئيسي' })
-    for (const label of ['الرئيسية', 'خطط الدروس', 'الأنشطة', 'الاختبارات', 'بطاقات التفكير', 'أدوات الصف', 'الإعدادات']) {
+    for (const label of ['الرئيسية', 'خطط الدروس', 'الأنشطة', 'الاختبارات', 'بطاقات التفكير', 'الشهادات', 'أدوات الصف', 'الإعدادات']) {
       expect(within(nav).getByRole('link', { name: new RegExp(label) })).toBeTruthy()
     }
   })
