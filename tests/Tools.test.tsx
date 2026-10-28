@@ -215,7 +215,7 @@ describe('المؤشرات', () => {
     renderAppAt('#/tools?tab=insights')
 
     expect(screen.getByText('حجم المكتبة')).toBeTruthy()
-    expect(screen.getByText('٤٥')).toBeTruthy() // دقائق الخطط
+    expect(screen.getByText('45')).toBeTruthy() // دقائق الخطط
     expect(screen.getByText('توزيع صعوبة الأسئلة')).toBeTruthy()
     expect(screen.getByText('توزيع أنواع الأسئلة')).toBeTruthy()
     expect(screen.getByText('خطة درس الأعداد النسبية')).toBeTruthy() // آخر التعديلات

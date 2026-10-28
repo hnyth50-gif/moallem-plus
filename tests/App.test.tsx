@@ -126,11 +126,11 @@ describe('الساعة والتاريخ', () => {
 
     // الساعة الكبيرة (وضع full) تُظهر الثواني وتتقدم كل ثانية
     const timer = screen.getByRole('timer')
-    expect(timer.textContent).toContain('٠٩:٠٥:٠٠')
+    expect(timer.textContent).toContain('09:05:00')
     act(() => {
       vi.advanceTimersByTime(1000)
     })
-    expect(timer.textContent).toContain('٠٩:٠٥:٠١')
+    expect(timer.textContent).toContain('09:05:01')
 
     // التاريخان ظاهران (الهجري ينتهي بهاء السنة الهجرية) — في النسختين: الترويسة والبطاقة
     expect(screen.getByText('الهجري')).toBeTruthy()

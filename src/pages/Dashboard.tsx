@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
 import { useData } from '../state/DataContext'
 import { sortByUpdated } from '../lib/store'
-import { formatRelative, dayKey } from '../lib/format'
+import { formatRelative, formatPoints, dayKey } from '../lib/format'
 import { BUILTIN_CARDS, cardOfDay, CATEGORY_COLORS, CATEGORY_LABELS } from '../lib/strategies'
 import { Badge, Button, Card, DemoBadge, PageHeader, EmptyState } from '../components/UI'
 import { ClockCard } from '../components/ClockWidget'
@@ -145,7 +145,7 @@ export function Dashboard() {
                 >
                   <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg text-brand-600 dark:text-brand-300">{s.icon}</div>
                   <div className="text-2xl font-extrabold text-slate-900 dark:text-white" aria-label={`${s.label}: ${s.value}`}>
-                    {s.value.toLocaleString('ar-EG')}
+                    {formatPoints(s.value)}
                   </div>
                   <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{s.label}</div>
                 </Link>

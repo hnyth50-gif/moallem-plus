@@ -1,13 +1,14 @@
 // ============ اختبارات أدوات التنسيق العربية ============
 
 import { describe, it, expect } from 'vitest'
-import { formatPoints, pointsLabel, arabicIndex, formatRelative, formatHijri, formatTime } from '../src/lib/format'
+import { formatPoints, pointsLabel, arabicIndex, formatRelative, formatHijri, formatTime, formatDate, formatDateForPrint } from '../src/lib/format'
 
 describe('formatPoints', () => {
-  it('يحول الأرقام إلى الأرقام العربية الشرقية', () => {
-    // ar-EG يعطي الأرقام الهندية (٠١٢...)
-    expect(formatPoints(10)).toContain('١')
-    expect(formatPoints(15)).toContain('٥')
+  it('يعرض الأرقام الغربية في جميع الأعداد', () => {
+    expect(formatPoints(10)).toBe('10')
+    expect(formatPoints(15)).toBe('15')
+    expect(formatPoints(12345)).toBe('12,345')
+    expect(formatPoints(12.5)).toBe('12.5')
   })
 
   it('يتحمل القيم غير النهائية', () => {
@@ -21,12 +22,12 @@ describe('pointsLabel', () => {
     expect(pointsLabel(2)).toBe('نقطتان')
   })
 
-  it('٣ إلى ١٠ بالجمع', () => {
+  it('3 إلى 10 بالجمع', () => {
     expect(pointsLabel(5)).toContain('نقاط')
     expect(pointsLabel(10)).toContain('نقاط')
   })
 
-  it('١١ فصاعدًا بالمفرد', () => {
+  it('11 فصاعدًا بالمفرد', () => {
     expect(pointsLabel(11)).toContain('نقطة')
     expect(pointsLabel(11)).not.toContain('نقاط')
     expect(pointsLabel(14)).toContain('نقطة')
@@ -35,7 +36,7 @@ describe('pointsLabel', () => {
 
   it('الصفر بلا نقاط لا ينكسر', () => {
     const out = pointsLabel(0)
-    expect(out).toContain('٠')
+    expect(out).toContain('0')
   })
 
   it('القيمة غير الرقمية تعسل فارغًا (لا تظهر نقاطًا وهمية)', () => {
@@ -46,8 +47,8 @@ describe('pointsLabel', () => {
 
 describe('arabicIndex', () => {
   it('الفهرس يبدأ من الواحد', () => {
-    expect(arabicIndex(0)).toContain('١')
-    expect(arabicIndex(4)).toContain('٥')
+    expect(arabicIndex(0)).toBe('1')
+    expect(arabicIndex(4)).toBe('5')
   })
 })
 
@@ -85,11 +86,45 @@ describe('formatHijri', () => {
 describe('formatTime', () => {
   it('يعرض الوقت بنظام 24 ساعة', () => {
     const t = new Date(2026, 0, 1, 9, 5, 3).getTime()
-    expect(formatTime(t)).toContain('٠٥')
+    expect(formatTime(t)).toBe('09:05:03')
   })
 
   it('قيم غير صالحة تعلن فارغًا', () => {
     expect(formatTime(null)).toBe('')
     expect(formatTime(Number.NaN)).toBe('')
+  })
+})
+
+describe('توحيد نظام الأرقام في جميع التواريخ والنصوص', () => {
+  const easternDigits = /[٠-٩۰-۹]/
+  const sampleDate = new Date(2026, 9, 23, 9, 5, 3).getTime()
+
+  it('يحافظ على أسماء الأشهر العربية مع الأرقام الغربية', () => {
+    const date = formatDate(sampleDate)
+    expect(date).toContain('2026')
+    expect(date).toContain('23')
+    expect(date).not.toMatch(easternDigits)
+
+    const printedDate = formatDateForPrint('2026-10-23')
+    expect(printedDate).toContain('2026')
+    expect(printedDate).not.toMatch(easternDigits)
+  })
+
+  it('يستخدم الأرقام الغربية في التاريخ الهجري والزمن النسبي', () => {
+    const hijri = formatHijri(sampleDate)
+    expect(hijri).toContain('هـ')
+    expect(hijri).toMatch(/[0-9]/)
+    expect(hijri).not.toMatch(easternDigits)
+
+    const relative = formatRelative(sampleDate - 23 * 60_000, sampleDate)
+    expect(relative).toContain('23')
+    expect(relative).not.toMatch(easternDigits)
+  })
+
+  it('لا يعيد أرقامًا شرقية في النقاط أو الترقيم أو الساعة', () => {
+    expect(formatPoints(1098)).not.toMatch(easternDigits)
+    expect(pointsLabel(1098)).not.toMatch(easternDigits)
+    expect(arabicIndex(7)).toBe('8')
+    expect(formatTime(sampleDate)).not.toMatch(easternDigits)
   })
 })
