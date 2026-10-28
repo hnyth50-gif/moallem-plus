@@ -5,6 +5,8 @@ import type { AppData } from './types'
 
 export const STORAGE_KEY = 'moallem-plus:v1'
 export const THEME_KEY = 'moallem-plus:theme'
+export const ACCENT_KEY = 'moallem-plus:accent'
+export const ACCENT_VARS_KEY = 'moallem-plus:accent-vars'
 export const INSTALL_PROMPT_KEY = 'moallem-plus:install-prompt'
 
 export interface SaveResult {

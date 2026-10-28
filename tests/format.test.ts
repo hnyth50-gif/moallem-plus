@@ -1,7 +1,7 @@
 // ============ اختبارات أدوات التنسيق العربية ============
 
 import { describe, it, expect } from 'vitest'
-import { formatPoints, pointsLabel, arabicIndex, formatRelative } from '../src/lib/format'
+import { formatPoints, pointsLabel, arabicIndex, formatRelative, formatHijri, formatTime } from '../src/lib/format'
 
 describe('formatPoints', () => {
   it('يحول الأرقام إلى الأرقام العربية الشرقية', () => {
@@ -64,5 +64,32 @@ describe('formatRelative', () => {
 
   it('قيمة غير رقمية تعلن فارغًا', () => {
     expect(formatRelative(Number.NaN)).toBe('')
+  })
+})
+
+describe('formatHijri', () => {
+  it('يعيد تاريخًا هجريًا منتهيًا بـ«هـ»', () => {
+    const t = new Date(2026, 9, 23, 12, 0).getTime()
+    const out = formatHijri(t)
+    expect(out).toContain('هـ')
+    expect(out.length).toBeGreaterThan(3)
+  })
+
+  it('قيم غير صالحة تعلن فارغًا', () => {
+    expect(formatHijri(0)).toBe('')
+    expect(formatHijri(Number.NaN)).toBe('')
+    expect(formatHijri(null)).toBe('')
+  })
+})
+
+describe('formatTime', () => {
+  it('يعرض الوقت بنظام 24 ساعة', () => {
+    const t = new Date(2026, 0, 1, 9, 5, 3).getTime()
+    expect(formatTime(t)).toContain('٠٥')
+  })
+
+  it('قيم غير صالحة تعلن فارغًا', () => {
+    expect(formatTime(null)).toBe('')
+    expect(formatTime(Number.NaN)).toBe('')
   })
 })

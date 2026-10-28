@@ -2,9 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import './index.css'
+import { restoreAccent } from './lib/accent'
 
 const rootEl = document.getElementById('root')
 if (!rootEl) throw new Error('عنصر #root غير موجود في index.html')
+
+// استرجاع لون الموقع المحفوظ (طبقة أمان إن لم يعمل سكربت الإقلاع في index.html)
+restoreAccent()
 
 createRoot(rootEl).render(
   <StrictMode>

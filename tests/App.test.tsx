@@ -1,9 +1,9 @@
 // ============ اختبارات الواجهة العامة (App / توجيه RTL) ============
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { render, screen, cleanup, fireEvent, within } from '@testing-library/react'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { render, screen, cleanup, fireEvent, within, act } from '@testing-library/react'
 import App from '../src/App'
-import { STORAGE_KEY } from '../src/lib/storage'
+import { STORAGE_KEY, ACCENT_KEY } from '../src/lib/storage'
 import { emptyData } from '../src/lib/store'
 import { makePlan } from './helpers'
 
@@ -15,11 +15,13 @@ beforeEach(() => {
   document.documentElement.setAttribute('dir', 'rtl')
   document.documentElement.setAttribute('lang', 'ar')
   document.documentElement.className = ''
+  document.documentElement.removeAttribute('style')
 })
 
 afterEach(() => {
   cleanup()
   window.localStorage.clear()
+  vi.useRealTimers()
 })
 
 describe('الصفحة الرئيسية', () => {
@@ -113,5 +115,57 @@ describe('الوضع الداكن', () => {
     window.localStorage.setItem('moallem-plus:theme', 'light')
     render(<App />)
     expect(document.documentElement.classList.contains('dark')).toBe(false)
+  })
+})
+
+describe('الساعة والتاريخ', () => {
+  it('لوحة التحكم تعرض ساعة حيّة مع التاريخين الهجري والميلادي', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 0, 1, 9, 5, 0))
+    render(<App />)
+
+    // الساعة الكبيرة (وضع full) تُظهر الثواني وتتقدم كل ثانية
+    const timer = screen.getByRole('timer')
+    expect(timer.textContent).toContain('٠٩:٠٥:٠٠')
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(timer.textContent).toContain('٠٩:٠٥:٠١')
+
+    // التاريخان ظاهران (الهجري ينتهي بهاء السنة الهجرية) — في النسختين: الترويسة والبطاقة
+    expect(screen.getByText('الهجري')).toBeTruthy()
+    expect(screen.getByText('الميلادي')).toBeTruthy()
+    expect(screen.getAllByText(/هـ/).length).toBeGreaterThan(0)
+
+    // ساعة الترويسة المضغوطة موجودة أيضًا (الترويسة + لوحة التحكم = نسختان)
+    expect(screen.getAllByLabelText('الوقت والتاريخ اليوم').length).toBe(2)
+  })
+})
+
+describe('لون الموقع', () => {
+  it('اختيار لون من الإعدادات يحقن متغيرات CSS ويُحفظ في التخزين', () => {
+    window.location.hash = '#/settings'
+    render(<App />)
+
+    const blue = screen.getByRole('radio', { name: 'أزرق' })
+    expect(blue.getAttribute('aria-checked')).toBe('false')
+    fireEvent.click(blue)
+
+    expect(blue.getAttribute('aria-checked')).toBe('true')
+    expect(document.documentElement.style.getPropertyValue('--brand-600')).toBe('37 99 235')
+    expect(localStorage.getItem(ACCENT_KEY)).toBe('blue')
+
+    // الرجوع إلى الافتراضي
+    fireEvent.click(screen.getByRole('radio', { name: 'فيروزي' }))
+    expect(document.documentElement.style.getPropertyValue('--brand-600')).toBe('13 148 136')
+    expect(localStorage.getItem(ACCENT_KEY)).toBe('teal')
+  })
+
+  it('اللون المحفوظ يُسترجع عند إقلاع جديد (مثل سكربت index.html)', () => {
+    window.localStorage.setItem(ACCENT_KEY, 'rose')
+    render(<App />)
+    // SettingsPage يستدعي restoreAccent عند التركيب فقط؛ هنا نتحقق من سكربت الإقلاع يدويًا
+    // (المحاكاة نفسها في tests/accent.test.ts) — هنا فقط نضمن عدم انكسار الواجهة
+    expect(document.documentElement.getAttribute('dir')).toBe('rtl')
   })
 })

@@ -108,3 +108,63 @@ export function formatClock(totalSeconds: number): string {
   const pad = (n: number) => String(n).padStart(2, '0')
   return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`
 }
+
+// ============ الساعة والتاريخ الهجري/الميلادي ============
+// المُنسّقات تُنشأ بتكاسل (lazy) وأي تقويم/إعداد غير مدعوم يعيد سلسلة فارغة بأمان.
+
+let hijriFmt: Intl.DateTimeFormat | null | undefined
+function getHijriFmt(): Intl.DateTimeFormat | null {
+  if (hijriFmt === undefined) {
+    try {
+      hijriFmt = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    } catch {
+      hijriFmt = null
+    }
+  }
+  return hijriFmt
+}
+
+let timeFmt: Intl.DateTimeFormat | null | undefined
+function getTimeFmt(): Intl.DateTimeFormat | null {
+  if (timeFmt === undefined) {
+    try {
+      timeFmt = new Intl.DateTimeFormat('ar-EG', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      })
+    } catch {
+      timeFmt = null
+    }
+  }
+  return timeFmt
+}
+
+/** التاريخ الهجري (أم القرى) مثل «١٤ رجب ١٤٤٧ هـ» */
+export function formatHijri(ms: number | undefined | null): string {
+  if (!ms || !Number.isFinite(ms)) return ''
+  const fmt = getHijriFmt()
+  if (!fmt) return ''
+  try {
+    return fmt.format(new Date(ms))
+  } catch {
+    return ''
+  }
+}
+
+/** وقت الساعة بنظام 24 ساعة مثل «٠٩:٠٥:٠٣» */
+export function formatTime(ms: number | undefined | null): string {
+  if (ms === null || ms === undefined || !Number.isFinite(ms)) return ''
+  const fmt = getTimeFmt()
+  if (!fmt) return ''
+  try {
+    return fmt.format(new Date(ms))
+  } catch {
+    return ''
+  }
+}

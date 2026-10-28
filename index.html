@@ -13,7 +13,7 @@
     <meta name="theme-color" content="#0f766e" />
     <title>معلّم بلس | مساحة عمل المعلم</title>
     <script>
-      // تطبيق الوضع الداكن قبل تحميل CSS لتجنّب الوميض
+      // تطبيق الوضع الداكن ولون الموقع المحفوظ قبل تحميل CSS لتجنّب الوميض
       ;(function () {
         try {
           var saved = localStorage.getItem('moallem-plus:theme')
@@ -21,6 +21,15 @@
             ? saved === 'dark'
             : window.matchMedia('(prefers-color-scheme: dark)').matches
           if (dark) document.documentElement.classList.add('dark')
+        } catch (e) {
+          /* تجاهل */
+        }
+        try {
+          var accentVars = localStorage.getItem('moallem-plus:accent-vars')
+          if (accentVars) {
+            var vars = JSON.parse(accentVars)
+            for (var k in vars) document.documentElement.style.setProperty(k, vars[k])
+          }
         } catch (e) {
           /* تجاهل */
         }

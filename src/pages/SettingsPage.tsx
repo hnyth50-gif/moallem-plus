@@ -3,6 +3,7 @@ import { useData } from '../state/DataContext'
 import { useTheme } from '../state/ThemeContext'
 import { useToast } from '../state/ToastContext'
 import { estimateKb } from '../lib/storage'
+import { ACCENTS, applyAccent, restoreAccent, saveAccent } from '../lib/accent'
 import { Badge, Button, ConfirmDialog, Field, Input, Modal, PageHeader, Card } from '../components/UI'
 import { IconDownload, IconUpload, IconTrash, IconMoon, IconSun, IconRefresh, IconAlert } from '../components/icons'
 import { formatPoints } from '../lib/format'
@@ -14,6 +15,7 @@ export function SettingsPage() {
   const { data, updateProfile, exportBackup, importBackup, loadDemoData, removeDemoData, deleteAllData } = useData()
   const { theme, setTheme } = useTheme()
   const { toast } = useToast()
+  const [accent, setAccent] = useState(() => restoreAccent())
   const profile = data.settings.profile
 
   const fileRef = useRef<HTMLInputElement>(null)
@@ -114,6 +116,43 @@ export function SettingsPage() {
                 {t.label}
               </button>
             ))}
+          </div>
+
+          {/* لون الموقع */}
+          <div>
+            <p className="mb-2 text-sm font-bold text-slate-800 dark:text-slate-100" id="accent-heading">
+              لون الموقع
+            </p>
+            <div className="flex flex-wrap gap-2.5" role="radiogroup" aria-labelledby="accent-heading">
+              {ACCENTS.map((a) => (
+                <button
+                  key={a.id}
+                  role="radio"
+                  aria-checked={accent.id === a.id}
+                  onClick={() => {
+                    applyAccent(a)
+                    saveAccent(a)
+                    setAccent(a)
+                    toast(`تغيّر لون الموقع إلى «${a.label}».`)
+                  }}
+                  title={a.label}
+                  aria-label={a.label}
+                  className={
+                    'flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ' +
+                    (accent.id === a.id
+                      ? 'border-brand-600 bg-brand-50 text-brand-800 dark:bg-brand-900/40 dark:text-brand-200'
+                      : 'border-slate-300 text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700/40')
+                  }
+                >
+                  <span
+                    className="h-4 w-4 rounded-full ring-1 ring-inset ring-black/10"
+                    style={{ backgroundColor: a.swatch }}
+                    aria-hidden="true"
+                  />
+                  {a.label}
+                </button>
+              ))}
+            </div>
           </div>
         </Card>
 

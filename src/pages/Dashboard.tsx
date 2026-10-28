@@ -5,6 +5,7 @@ import { sortByUpdated } from '../lib/store'
 import { formatRelative, dayKey } from '../lib/format'
 import { BUILTIN_CARDS, cardOfDay, CATEGORY_COLORS, CATEGORY_LABELS } from '../lib/strategies'
 import { Badge, Button, Card, DemoBadge, PageHeader, EmptyState } from '../components/UI'
+import { ClockCard } from '../components/ClockWidget'
 import { IconPlan, IconActivity, IconQuiz, IconCards, IconPlus, IconSparkles, IconAlert } from '../components/icons'
 import { KIND_LABEL } from '../components/DocListPage'
 import type { ActivityDoc, PlanDoc, QuizDoc, ThinkingCard } from '../lib/types'
@@ -69,6 +70,9 @@ export function Dashboard() {
         title={`${greeting()}${name ? `، ${name}` : ' أيها المعلم'} 👋`}
         subtitle="مساحتك الموّحدة لإعداد الدروس — كل شيء يعمل على جهازك دون اتصال."
       />
+
+      {/* الساعة والتاريخ الهجري والميلادي */}
+      <ClockCard className="mb-6" />
 
       {demoCounts > 0 && (
         <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800/60 dark:bg-amber-900/30 dark:text-amber-200">

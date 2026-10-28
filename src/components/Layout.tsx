@@ -3,6 +3,7 @@ import { NavLink, Link } from 'react-router-dom'
 import { useTheme } from '../state/ThemeContext'
 import { cn } from '../lib/cn'
 import { Button } from './UI'
+import { ClockWidget } from './ClockWidget'
 import { IconHome, IconPlan, IconActivity, IconQuiz, IconCards, IconSettings, IconMenu, IconClose, IconSun, IconMoon, IconClock } from './icons'
 
 // ============ التخطيط العام ============
@@ -123,6 +124,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-1.5">
+            <ClockWidget />
             <ThemeToggle />
             <button
               ref={menuButtonRef}
