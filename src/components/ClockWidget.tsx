@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { formatHijri, formatDate, formatTime } from '../lib/format'
-import { Card } from './UI'
+import { Card, IconBadge } from './UI'
 import { cn } from '../lib/cn'
 
 // ============ الساعة والتاريخ ============
@@ -35,12 +35,12 @@ export function ClockWidget({ variant = 'header' }: { variant?: 'header' | 'full
       aria-label="الوقت والتاريخ اليوم"
     >
       <div className="flex items-center gap-3">
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
+        <IconBadge size="lg">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7" aria-hidden="true">
             <circle cx="12" cy="12" r="8.5" />
             <path d="M12 7.5V12l3.2 2" />
           </svg>
-        </span>
+        </IconBadge>
         <p
           className="text-4xl font-extrabold tabular-nums tracking-tight text-slate-900 dark:text-white sm:text-5xl"
           role="timer"

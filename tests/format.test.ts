@@ -4,10 +4,10 @@ import { describe, it, expect } from 'vitest'
 import { formatPoints, pointsLabel, arabicIndex, formatRelative, formatHijri, formatTime } from '../src/lib/format'
 
 describe('formatPoints', () => {
-  it('يحول الأرقام إلى الأرقام العربية الشرقية', () => {
-    // ar-EG يعطي الأرقام الهندية (٠١٢...)
-    expect(formatPoints(10)).toContain('١')
-    expect(formatPoints(15)).toContain('٥')
+  it('يعرض الأرقام بالأرقام العربية الغربية (0-9)', () => {
+    expect(formatPoints(10)).toBe('10')
+    expect(formatPoints(15)).toBe('15')
+    expect(formatPoints(1234)).toBe('1,234')
   })
 
   it('يتحمل القيم غير النهائية', () => {
@@ -35,7 +35,7 @@ describe('pointsLabel', () => {
 
   it('الصفر بلا نقاط لا ينكسر', () => {
     const out = pointsLabel(0)
-    expect(out).toContain('٠')
+    expect(out).toContain('0')
   })
 
   it('القيمة غير الرقمية تعسل فارغًا (لا تظهر نقاطًا وهمية)', () => {
@@ -45,9 +45,9 @@ describe('pointsLabel', () => {
 })
 
 describe('arabicIndex', () => {
-  it('الفهرس يبدأ من الواحد', () => {
-    expect(arabicIndex(0)).toContain('١')
-    expect(arabicIndex(4)).toContain('٥')
+  it('الفهرس يبدأ من الواحد بأرقام غربية', () => {
+    expect(arabicIndex(0)).toBe('1')
+    expect(arabicIndex(4)).toBe('5')
   })
 })
 
@@ -83,9 +83,9 @@ describe('formatHijri', () => {
 })
 
 describe('formatTime', () => {
-  it('يعرض الوقت بنظام 24 ساعة', () => {
+  it('يعرض الوقت بنظام 24 ساعة بأرقام غربية', () => {
     const t = new Date(2026, 0, 1, 9, 5, 3).getTime()
-    expect(formatTime(t)).toContain('٠٥')
+    expect(formatTime(t)).toContain('05')
   })
 
   it('قيم غير صالحة تعلن فارغًا', () => {

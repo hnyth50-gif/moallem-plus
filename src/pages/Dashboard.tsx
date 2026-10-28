@@ -2,12 +2,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
 import { useData } from '../state/DataContext'
 import { sortByUpdated } from '../lib/store'
-import { formatRelative, dayKey } from '../lib/format'
+import { formatRelative, dayKey, formatPoints } from '../lib/format'
 import { BUILTIN_CARDS, cardOfDay, CATEGORY_COLORS, CATEGORY_LABELS } from '../lib/strategies'
-import { Badge, Button, Card, DemoBadge, PageHeader, EmptyState } from '../components/UI'
+import { Badge, Button, Card, DemoBadge, PageHeader, EmptyState, IconBadge } from '../components/UI'
 import { ClockCard } from '../components/ClockWidget'
 import { IconPlan, IconActivity, IconQuiz, IconCards, IconPlus, IconSparkles, IconAlert } from '../components/icons'
-import { KIND_LABEL } from '../components/DocListPage'
+import { DocIcon, DocKindBadge } from '../components/DocListPage'
 import type { ActivityDoc, PlanDoc, QuizDoc, ThinkingCard } from '../lib/types'
 
 // ============ لوحة التحكم ============
@@ -100,9 +100,9 @@ export function Dashboard() {
             to={a.to}
             className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-card transition hover:border-brand-400 hover:bg-brand-50/50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500 dark:hover:bg-brand-900/20"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-100 text-brand-700 transition group-hover:bg-brand-600 group-hover:text-white dark:bg-brand-900/50 dark:text-brand-300">
+            <IconBadge size="md" className="transition group-hover:bg-brand-600 group-hover:text-white group-hover:ring-brand-600 dark:group-hover:bg-brand-600 dark:group-hover:text-white">
               {a.icon}
-            </span>
+            </IconBadge>
             <span className="font-semibold text-slate-800 dark:text-slate-100">{a.label}</span>
           </Link>
         ))}
@@ -143,9 +143,9 @@ export function Dashboard() {
                   to={s.to}
                   className="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-card transition hover:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500"
                 >
-                  <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg text-brand-600 dark:text-brand-300">{s.icon}</div>
+                  <IconBadge size="sm" className="mx-auto mb-2">{s.icon}</IconBadge>
                   <div className="text-2xl font-extrabold text-slate-900 dark:text-white" aria-label={`${s.label}: ${s.value}`}>
-                    {s.value.toLocaleString('ar-EG')}
+                    {formatPoints(s.value)}
                   </div>
                   <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{s.label}</div>
                 </Link>
@@ -163,12 +163,15 @@ export function Dashboard() {
                       to={`${item.docType === 'plan' ? '/plans' : item.docType === 'activity' ? '/activities' : '/quizzes'}/${item.id}`}
                       className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition hover:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500"
                     >
-                      <span className="flex min-w-0 items-center gap-2">
+                      <span className="flex min-w-0 items-center gap-2.5">
+                        <IconBadge size="sm">
+                          <DocIcon kind={item.docType} />
+                        </IconBadge>
                         <span className="truncate font-semibold text-slate-800 dark:text-slate-100">{item.title}</span>
                         {'demo' in item && item.demo && <DemoBadge />}
                       </span>
                       <span className="flex shrink-0 items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                        <Badge>{KIND_LABEL[item.docType]}</Badge>
+                        <DocKindBadge kind={item.docType} />
                         <span>{formatRelative(item.updatedAt)}</span>
                       </span>
                     </Link>

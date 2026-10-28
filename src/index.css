@@ -16,9 +16,58 @@
   --brand-800: 17 94 89;
   --brand-900: 19 78 74;
   --brand-950: 4 47 46;
+  /* شفافية هالات الخلفية المتغيرة (أخف في الوضع الداكن) */
+  --bg-glow-1: 0.20;
+  --bg-glow-2: 0.13;
+  --bg-glow-3: 0.10;
 }
 .dark {
   color-scheme: dark;
+  --bg-glow-1: 0.11;
+  --bg-glow-2: 0.08;
+  --bg-glow-3: 0.09;
+}
+
+/* ==================== الخلفية المتغيرة ==================== */
+/* هالات ضوئية من لون الموقع تتحرك ببطء خلف المحتوى، وتتبدل تلقائيًا
+   عند اختيار لون جديد من الإعدادات لأنها مبنية على متغيرات --brand. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(46rem 46rem at 85% -10%, rgb(var(--brand-300) / var(--bg-glow-1)), transparent 62%),
+    radial-gradient(38rem 38rem at -8% 40%, rgb(var(--brand-400) / var(--bg-glow-2)), transparent 62%),
+    radial-gradient(50rem 50rem at 55% 118%, rgb(var(--brand-600) / var(--bg-glow-3)), transparent 62%);
+  background-size: 170% 170%;
+  background-position: 0% 0%, 100% 0%, 50% 100%;
+  animation: bg-drift 42s ease-in-out infinite alternate;
+}
+
+@keyframes bg-drift {
+  0% {
+    background-position: 0% 0%, 100% 0%, 50% 100%;
+  }
+  50% {
+    background-position: 55% 45%, 0% 55%, 60% 0%;
+  }
+  100% {
+    background-position: 100% 100%, 35% 15%, 0% 55%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+}
+
+@media print {
+  body::before {
+    display: none;
+  }
 }
 
 html {

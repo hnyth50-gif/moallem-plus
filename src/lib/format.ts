@@ -1,19 +1,22 @@
-// أدوات تنسيق التواريخ والأرقام بالعربية (ميلادي)
-const dateFmt = new Intl.DateTimeFormat('ar-EG', {
+// أدوات تنسيق التواريخ والأرقام بالعربية (ميلادي) بأرقام غربية (0-9)
+// — «الأرقام العربية الغربية» أوضح للقراءة في التواريخ والعدادات والإحصاءات.
+const NUM_LOCALE = 'ar-EG-u-nu-latn'
+
+const dateFmt = new Intl.DateTimeFormat(NUM_LOCALE, {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
   calendar: 'gregory',
 })
 
-const dateFmtShort = new Intl.DateTimeFormat('ar-EG', {
+const dateFmtShort = new Intl.DateTimeFormat(NUM_LOCALE, {
   year: 'numeric',
   month: 'short',
   day: 'numeric',
   calendar: 'gregory',
 })
 
-const relTime = new Intl.RelativeTimeFormat('ar', { numeric: 'auto' })
+const relTime = new Intl.RelativeTimeFormat('ar-u-nu-latn', { numeric: 'auto' })
 
 export function formatDate(ms: number | undefined | null): string {
   if (!ms || !Number.isFinite(ms)) return ''
@@ -66,7 +69,7 @@ export function formatRelative(ms: number, now = Date.now()): string {
 
 export function formatPoints(n: number): string {
   try {
-    return n.toLocaleString('ar-EG')
+    return n.toLocaleString(NUM_LOCALE)
   } catch {
     return String(n)
   }
@@ -81,10 +84,10 @@ export function pointsLabel(n: number): string {
   return `${formatPoints(n)} نقطة`
 }
 
-/** مبدّل اختياري للأرقام في طباعة الاختبار */
+/** ترقيم أسئلة الطباعة بأرقام غربية: 1. 2. 3. */
 export function arabicIndex(n: number): string {
   try {
-    return (n + 1).toLocaleString('ar-EG')
+    return (n + 1).toLocaleString(NUM_LOCALE)
   } catch {
     return String(n + 1)
   }
@@ -116,7 +119,7 @@ let hijriFmt: Intl.DateTimeFormat | null | undefined
 function getHijriFmt(): Intl.DateTimeFormat | null {
   if (hijriFmt === undefined) {
     try {
-      hijriFmt = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+      hijriFmt = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-latn', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -132,7 +135,7 @@ let timeFmt: Intl.DateTimeFormat | null | undefined
 function getTimeFmt(): Intl.DateTimeFormat | null {
   if (timeFmt === undefined) {
     try {
-      timeFmt = new Intl.DateTimeFormat('ar-EG', {
+      timeFmt = new Intl.DateTimeFormat(NUM_LOCALE, {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
@@ -145,7 +148,7 @@ function getTimeFmt(): Intl.DateTimeFormat | null {
   return timeFmt
 }
 
-/** التاريخ الهجري (أم القرى) مثل «١٤ رجب ١٤٤٧ هـ» */
+/** التاريخ الهجري (أم القرى) مثل «14 رجب 1447 هـ» */
 export function formatHijri(ms: number | undefined | null): string {
   if (!ms || !Number.isFinite(ms)) return ''
   const fmt = getHijriFmt()
@@ -157,7 +160,7 @@ export function formatHijri(ms: number | undefined | null): string {
   }
 }
 
-/** وقت الساعة بنظام 24 ساعة مثل «٠٩:٠٥:٠٣» */
+/** وقت الساعة بنظام 24 ساعة مثل «09:05:03» */
 export function formatTime(ms: number | undefined | null): string {
   if (ms === null || ms === undefined || !Number.isFinite(ms)) return ''
   const fmt = getTimeFmt()
