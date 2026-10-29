@@ -63,7 +63,7 @@ describe('التنقل بين الشاشات', () => {
     expect(window.location.hash).toBe('#/settings')
     // ترويسة الصفحة والروابط عدة تسجيلات للنص نفسه — يكفي وجوده
     expect(screen.getAllByText('الإعدادات').length).toBeGreaterThan(0)
-    expect(screen.getByText(/ملفك، المظهر، ونسخك الاحتياطية/)).toBeTruthy()
+    expect(screen.getByText(/ملفك، حسابك السحابي، المظهر/)).toBeTruthy()
   })
 
   it('مسار مجهول يعرض صفحة «غير موجود»', () => {

@@ -236,6 +236,13 @@ export const IconFile = (p: IconProps) => (
   </Base>
 )
 
+/** سحابة — الحساب والمزامنة السحابية */
+export const IconCloud = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M7 18.5h10a4 4 0 0 0 .8-7.9 5.5 5.5 0 0 0-10.7-1.4A4.2 4.2 0 0 0 7 18.5z" />
+  </Base>
+)
+
 /** شعار يوتيوب مبسط خطي — مرفق فيديو */
 export const IconYouTube = (p: IconProps) => (
   <Base {...p}>

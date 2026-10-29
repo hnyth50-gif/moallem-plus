@@ -5,6 +5,7 @@ import { useToast } from '../state/ToastContext'
 import { estimateKb } from '../lib/storage'
 import { ACCENTS, applyAccent, restoreAccent, saveAccent } from '../lib/accent'
 import { BackgroundPicker } from '../components/BackgroundPicker'
+import { AuthPanel } from '../components/AuthPanel'
 import { Badge, Button, ConfirmDialog, Field, Input, Modal, PageHeader, Card } from '../components/UI'
 import { IconDownload, IconUpload, IconTrash, IconMoon, IconSun, IconRefresh, IconAlert } from '../components/icons'
 import { formatPoints } from '../lib/format'
@@ -67,7 +68,7 @@ export function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="الإعدادات" subtitle="ملفك، المظهر، ونسخك الاحتياطية — كل شيء يبقى على جهازك." />
+      <PageHeader title="الإعدادات" subtitle="ملفك، حسابك السحابي، المظهر، ونسخك الاحتياطية — في مكان واحد." />
 
       <div className="mx-auto max-w-3xl space-y-6">
         {/* الملف الشخصي */}
@@ -89,6 +90,9 @@ export function SettingsPage() {
           </div>
           <p className="text-[11px] text-slate-400 dark:text-slate-500">الحفظ تلقائي مع كل تغيير.</p>
         </Card>
+
+        {/* الحساب والمزامنة السحابية (Supabase) */}
+        <AuthPanel />
 
         {/* المظهر */}
         <Card className="space-y-4">

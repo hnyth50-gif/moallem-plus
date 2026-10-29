@@ -14,6 +14,8 @@ import { loadAppState, saveAppState, SAVE_ERROR_MESSAGES } from '../lib/storage'
 import { applyDemoToData } from '../lib/seed'
 import { parseImport } from '../lib/validate'
 import { clearAllFileBlobs, collectFileIds, deleteFileBlobIds } from '../lib/attachments'
+import { diffDocs, flushNow, pullAll, enqueueCloudOps, docsToOps, mergeCloudIntoLocal } from '../lib/cloudSync'
+import { useCloud } from './CloudContext'
 import { useToast } from './ToastContext'
 import { makeId } from '../lib/id'
 
@@ -51,9 +53,18 @@ const DataContext = createContext<DataContextValue | null>(null)
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast()
+  const cloud = useCloud()
   const [data, setData] = useState<AppData>(emptyData)
   const [ready, setReady] = useState(false)
   const loadedOnce = useRef(false)
+  // مرآة البيانات لقراءتها خارج دوال التحديث (المزامنة السحابية)
+  const dataRef = useRef<AppData>(data)
+  // هوية المستخدم للسحابة داخل دوال التحديث دون إعادة إنشائها
+  const syncUserIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    syncUserIdRef.current = cloud.user?.id ?? null
+  }, [cloud.user?.id])
 
   // التحميل الأولي
   useEffect(() => {
@@ -76,7 +87,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setReady(true)
   }, [])
 
-  /** تحديث مضمن: نسخة جديدة ثم حفظ */
+  /** تحديث مضمن: نسخة جديدة ثم حفظ محلي ثم دفع الفرق إلى السحابة عند تسجيل الدخول */
   const update = useCallback(
     (mutator: (draft: AppData) => void) => {
       setData((prev) => {
@@ -94,11 +105,49 @@ export function DataProvider({ children }: { children: ReactNode }) {
         mutator(draft)
         const result = saveAppState(draft)
         if (!result.ok && result.reason) toast(SAVE_ERROR_MESSAGES[result.reason], 'error')
+        dataRef.current = draft
+        // مزامنة الفرق: ما أُضيف أو عُدّل أو حُذف يُدفع مؤجلًا إلى Supabase
+        if (syncUserIdRef.current) {
+          const { upserts, deletes } = diffDocs(prev, draft)
+          if (upserts.length > 0 || deletes.length > 0) enqueueCloudOps(upserts, deletes)
+        }
         return draft
       })
     },
     [toast],
   )
+
+  // الجلب والدمج عند تسجيل الدخول أو عند «مزامنة الآن»
+  useEffect(() => {
+    if (!ready || cloud.status !== 'signedIn' || !cloud.user) return
+    const userId = cloud.user.id
+    cloud.markSyncing()
+    void (async () => {
+      const pulled = await pullAll(userId)
+      if (!pulled.ok) {
+        cloud.markSyncError()
+        toast('تعذر جلب بياناتك من السحابة — ستعمل بياناتك محليًا وتتزامن عند العودة.', 'error')
+        // دفع المعلق محليًا موجود يستمر عند العودة
+        return
+      }
+      // دمج بالأحدث: السحابة والمحلي يتعايشان (كل مستند بالنسخة الأحدث updatedAt)
+      const merged = mergeCloudIntoLocal(dataRef.current, pulled.data ?? {}, pulled.profile)
+      update((d) => {
+        d.plans = merged.plans
+        d.activities = merged.activities
+        d.quizzes = merged.quizzes
+        d.customCards = merged.customCards
+        d.weekEntries = merged.weekEntries
+        d.certificates = merged.certificates
+        d.settings.profile = merged.settings.profile
+      })
+      // دفع كامل من النسخة المدمجة مرة واحدة بعد الدخول (رفع ما هو محلي فقط — upsert مكرر غير مؤذٍ)
+      enqueueCloudOps(docsToOps(merged), [], merged.settings.profile)
+      cloud.markSynced()
+      await flushNow()
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, cloud.status, cloud.user?.id, cloud.syncNonce])
 
   const savePlan = useCallback(
     (doc: PlanDoc) => update((d) => (d.plans = upsertIn(d.plans, doc))),
@@ -155,8 +204,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   )
 
   const updateProfile = useCallback(
-    (p: Partial<Profile>) =>
-      update((d) => (d.settings.profile = { ...d.settings.profile, ...p })),
+    (p: Partial<Profile>) => {
+      update((d) => (d.settings.profile = { ...d.settings.profile, ...p }))
+      // الملف الشخصي يُدفع إلى السحابة أيضًا عند تسجيل الدخول
+      if (syncUserIdRef.current) {
+        const profile = dataRef.current.settings.profile
+        enqueueCloudOps([], [], { ...profile, ...p } as Profile)
+      }
+    },
     [update],
   )
 

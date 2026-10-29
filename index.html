@@ -53,6 +53,9 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- مكتبة Supabase من CDN: سكربت كلاسيكي قبل حزمة التطبيق لضمان توفر window.supabase
+         عند الإقلاع. عند الانقطاع يفشل التحميل بصمت ويعمل التطبيق محليًا كالمعتاد. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

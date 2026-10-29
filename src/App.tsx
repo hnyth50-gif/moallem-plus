@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ThemeProvider } from './state/ThemeContext'
 import { ToastProvider } from './state/ToastContext'
+import { CloudProvider } from './state/CloudContext'
 import { DataProvider } from './state/DataContext'
 import { Dashboard } from './pages/Dashboard'
 import { PlansList, ActivitiesList, QuizzesList } from './pages/DocLists'
@@ -57,9 +58,11 @@ function Providers() {
     <ErrorBoundary>
       <ThemeProvider>
         <ToastProvider>
-          <DataProvider>
-            <Router />
-          </DataProvider>
+          <CloudProvider>
+            <DataProvider>
+              <Router />
+            </DataProvider>
+          </CloudProvider>
         </ToastProvider>
       </ThemeProvider>
       {/* نافذة التثبيت مستقلة عن السياقات — ثابتة أسفل الشاشة */}

@@ -24,6 +24,16 @@ export default defineConfig({
         navigateFallbackDenylist: [/\/(login|oauth|signin|signup|auth|callback)(\/|$)/i],
         runtimeCaching: [
           {
+            // مكتبة Supabase من CDN: كاش أولًا بعد أول تحميل كي تعمل السحابة دون اتصال
+            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'supabase-cdn-cache',
+              expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             urlPattern: ({ request }) => request.mode === 'navigate',
             handler: 'NetworkFirst',
             options: {

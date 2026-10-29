@@ -298,6 +298,39 @@ function normalizeCertificate(raw: Record<string, unknown>): CertificateDoc {
   }
 }
 
+// ============ تطبيع مستند واحد قادم من السحابة (Supabase) ============
+
+export type CloudKind = 'plan' | 'activity' | 'quiz' | 'card' | 'week' | 'certificate'
+
+export type CloudDoc =
+  | { kind: 'plan'; doc: PlanDoc }
+  | { kind: 'activity'; doc: ActivityDoc }
+  | { kind: 'quiz'; doc: QuizDoc }
+  | { kind: 'card'; doc: ThinkingCard }
+  | { kind: 'week'; doc: WeekEntry }
+  | { kind: 'certificate'; doc: CertificateDoc }
+
+/** تطبيع صف واحد قادم من جدول السحابة حسب نوعه — ما تشوّه يُهمل بأمان */
+export function normalizeCloudRow(kind: string, raw: unknown): CloudDoc | null {
+  if (!isRecord(raw)) return null
+  switch (kind) {
+    case 'plan':
+      return { kind: 'plan', doc: normalizePlan(raw) }
+    case 'activity':
+      return { kind: 'activity', doc: normalizeActivity(raw) }
+    case 'quiz':
+      return { kind: 'quiz', doc: normalizeQuiz(raw) }
+    case 'card':
+      return { kind: 'card', doc: normalizeCard(raw) }
+    case 'week':
+      return { kind: 'week', doc: normalizeWeekEntry(raw) }
+    case 'certificate':
+      return { kind: 'certificate', doc: normalizeCertificate(raw) }
+    default:
+      return null
+  }
+}
+
 function normalizeWeekEntry(raw: Record<string, unknown>): WeekEntry {
   return {
     ...timestamps(raw),
