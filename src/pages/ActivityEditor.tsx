@@ -11,7 +11,7 @@ import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Textarea, Badge,
 import { StringListEditor } from '../components/StringListEditor'
 import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow, SavePdfButton } from '../components/PrintFrame'
 import { AttachmentsEditor, PaperAttachments } from '../components/AttachmentsEditor'
-import { deleteFileBlobs } from '../lib/attachments'
+import { deleteFileBlobs, deleteRemovedFileBlobs } from '../lib/attachments'
 import { IconPlus, IconTrash, IconPrint, IconClock } from '../components/icons'
 import { formatPoints } from '../lib/format'
 import { GRADE_SUGGESTIONS, SUBJECT_SUGGESTIONS } from '../lib/planEngine'
@@ -94,6 +94,7 @@ export function ActivityEditor() {
       toast('راجع الحقول المطلوبة قبل الحفظ.', 'error')
       return
     }
+    if (existing) void deleteRemovedFileBlobs(existing.attachments, doc.attachments)
     saveActivity({ ...doc, updatedAt: Date.now() })
     toast('حُفظ النشاط بنجاح.')
     navigate('/activities')

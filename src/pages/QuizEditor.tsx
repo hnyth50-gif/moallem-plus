@@ -18,7 +18,7 @@ import { validateQuiz, dropEmptyQuestions, validateQuestion } from '../lib/valid
 import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Select, Spinner, Textarea } from '../components/UI'
 import { PrintFrame, Paper, PaperHeader, printNow, SavePdfButton } from '../components/PrintFrame'
 import { AttachmentsEditor, PaperAttachments } from '../components/AttachmentsEditor'
-import { deleteFileBlobs } from '../lib/attachments'
+import { deleteFileBlobs, deleteRemovedFileBlobs } from '../lib/attachments'
 import { IconPlus, IconTrash, IconPrint, IconCopy, IconChevronDown, IconChevronUp } from '../components/icons'
 import { formatPoints, pointsLabel, arabicIndex } from '../lib/format'
 import { NotFoundLink } from './ActivityEditor'
@@ -145,6 +145,7 @@ export function QuizEditor() {
       toast(errs.questions ? errs.questions : 'راجع الحقول قبل الحفظ.', 'error')
       return
     }
+    if (existing) void deleteRemovedFileBlobs(existing.attachments, doc.attachments)
     saveQuiz({ ...doc, updatedAt: Date.now() })
     toast(dropped > 0 ? `حُفظ الاختبار وأُسقطت ${dropped} أسئلة فارغة.` : 'حُفظ الاختبار بنجاح.')
     navigate('/quizzes')

@@ -277,7 +277,9 @@ export function AttachmentsEditor({
   )
 }
 
-/** قسم مرفقات ورقة الطباعة: أسماء الملفات، النصوص كاملة، وروابط يوتيوب */
+/**
+ * قسم مرفقات ورقة الطباعة: أسماء الملفات، النصوص كاملة، وروابط يوتيوب
+ */
 export function PaperAttachments({ attachments }: { attachments: Attachment[] | undefined }) {
   if (!attachments || attachments.length === 0) return null
   const files = attachments.filter((a) => a.kind === 'file')

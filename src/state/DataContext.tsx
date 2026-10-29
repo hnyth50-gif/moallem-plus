@@ -13,7 +13,7 @@ import { emptyData, removeFrom, upsertIn, downloadJson, mergeData, stripDemo } f
 import { loadAppState, saveAppState, SAVE_ERROR_MESSAGES } from '../lib/storage'
 import { applyDemoToData } from '../lib/seed'
 import { parseImport } from '../lib/validate'
-import { clearAllFileBlobs } from '../lib/attachments'
+import { clearAllFileBlobs, collectFileIds, deleteFileBlobIds } from '../lib/attachments'
 import { useToast } from './ToastContext'
 import { makeId } from '../lib/id'
 
@@ -175,7 +175,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     (raw: unknown, mode: 'merge' | 'replace'): { ok: boolean; reason?: string } => {
       const result = parseImport(raw)
       if (!result.ok || !result.data) return { ok: false, reason: result.reason }
+      let orphanFileIds: string[] = []
       update((d) => {
+        if (mode === 'replace') {
+          // كتل ملفات المستندات القديمة التي لن تبقى بعد الاستبدال تُنظف من IndexedDB
+          const nextIds = new Set(
+            collectFileIds([...result.data!.plans, ...result.data!.activities, ...result.data!.quizzes]),
+          )
+          orphanFileIds = collectFileIds([...d.plans, ...d.activities, ...d.quizzes]).filter((id) => !nextIds.has(id))
+        }
         if (mode === 'merge') {
           const merged = mergeData(d, result.data!)
           d.plans = merged.plans
@@ -195,6 +203,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           d.settings.profile = result.data!.settings.profile
         }
       })
+      if (orphanFileIds.length > 0) void deleteFileBlobIds(orphanFileIds)
       toast(`تم استيراد البيانات (${mode === 'merge' ? 'دمج مع' : 'استبدال'}) بنجاح.`)
       return { ok: true }
     },

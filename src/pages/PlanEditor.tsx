@@ -10,7 +10,7 @@ import { Button, Card, ConfirmDialog, Field, Input, PageHeader, Textarea } from 
 import { StringListEditor } from '../components/StringListEditor'
 import { PrintFrame, Paper, PaperHeader, PaperSection, PaperList, printNow, HintBox, SavePdfButton } from '../components/PrintFrame'
 import { AttachmentsEditor, PaperAttachments } from '../components/AttachmentsEditor'
-import { deleteFileBlobs } from '../lib/attachments'
+import { deleteFileBlobs, deleteRemovedFileBlobs } from '../lib/attachments'
 import { formatPoints, formatDateForPrint, formatIsoDateAr } from '../lib/format'
 import { IconPlus, IconTrash, IconPrint } from '../components/icons'
 
@@ -85,6 +85,7 @@ export function PlanEditor() {
       toast('راجع الحقول المطلوبة قبل الحفظ.', 'error')
       return
     }
+    if (existing) void deleteRemovedFileBlobs(existing.attachments, doc.attachments)
     savePlan({ ...doc, updatedAt: Date.now() })
     toast('حُفظت الخطة بنجاح.')
     navigate('/plans')

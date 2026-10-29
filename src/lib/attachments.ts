@@ -83,7 +83,11 @@ function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => 
         const req = run(tx.objectStore(STORE))
         req.onsuccess = () => resolve(req.result as T)
         req.onerror = () => reject(req.error ?? new Error('indexeddb-request-failed'))
-        tx.oncomplete = () => db.close()
+        // إغلاق الاتصال مهما كانت النتيجة (إكمال أو خطأ أو إحباط)
+        const close = () => db.close()
+        tx.oncomplete = close
+        tx.onabort = close
+        tx.onerror = close
       }),
   )
 }
@@ -119,6 +123,40 @@ export async function deleteFileBlobs(attachments: Attachment[] | undefined): Pr
   }
 }
 
+/** معرفات ملفات المستند التي أُزيلت في تعديل (لتنظيفها عند الحفظ) */
+export function removedFileIds(prev: Attachment[] | undefined, next: Attachment[] | undefined): string[] {
+  const prevFiles = (prev ?? []).filter((a) => a.kind === 'file')
+  if (prevFiles.length === 0) return []
+  const nextIds = new Set((next ?? []).map((a) => a.id))
+  return prevFiles.filter((a) => !nextIds.has(a.id)).map((a) => a.id)
+}
+
+/** ينظف كتل الملفات التي أُزيلت من مستند عند حفظه */
+export async function deleteRemovedFileBlobs(prev: Attachment[] | undefined, next: Attachment[] | undefined): Promise<void> {
+  for (const id of removedFileIds(prev, next)) await deleteFileBlob(id)
+}
+
+/** يستنسخ المرفقات بمعرفات جديدة (لنسخة مستقل تمامًا) مع نقل كتل الملفات في IndexedDB */
+export async function cloneAttachments(attachments: Attachment[] | undefined): Promise<Attachment[] | undefined> {
+  if (!attachments || attachments.length === 0) return undefined
+  const out: Attachment[] = []
+  for (const a of attachments) {
+    const id = makeId()
+    if (a.kind === 'file') {
+      const blob = await getFileBlob(a.id)
+      if (blob) {
+        try {
+          await putFileBlob(id, blob)
+        } catch {
+          /* جهاز بلا IndexedDB — تبقى البيانات الوصفية بلا محتوى */
+        }
+      }
+    }
+    out.push({ ...a, id })
+  }
+  return out
+}
+
 /** يجمع كل معرفات ملفات المستندات (للتنظيف الشامل) */
 export function collectFileIds(docs: Array<{ attachments?: Attachment[] }>): string[] {
   return docs.flatMap((d) => (d.attachments ?? []).filter((a) => a.kind === 'file').map((a) => a.id))
@@ -131,6 +169,11 @@ export async function clearAllFileBlobs(): Promise<void> {
   } catch {
     /* تجاهل */
   }
+}
+
+/** يحذف كتل ملفات بقائمة معرفات (لتنظيف يتيم الاستيراد بالاستبدال) */
+export async function deleteFileBlobIds(ids: string[]): Promise<void> {
+  for (const id of ids) await deleteFileBlob(id)
 }
 
 /** ينشئ مرفق ملف جديد من ملف مختار (بياناته الوصفية فقط — المحتوى في IndexedDB) */

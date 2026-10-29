@@ -59,7 +59,7 @@
 | الأنماط | Tailwind CSS 3.4 (توافق RTL أصيل عبر `start/end`) |
 | البناء | Vite 5 (رمز أساس `base: './'` ليعمل تحت أي مسار) |
 | PWA | vite-plugin-pwa (Workbox 7) — عمل دون اتصال + تثبيت |
-| الاختبارات | Vitest 2 + Testing Library (jsdom) — 199 اختبارًا |
+| الاختبارات | Vitest 2 + Testing Library (jsdom) — 203 اختبارًا |
 | الأيقونات | SVG داخلية بلا مكتبات خارجية |
 | التخزين | `localStorage` فقط — لا خادم، لا مفاتيح API، لا تتبّع |
 

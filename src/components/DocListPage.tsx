@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { ActivityDoc, Attachment, PlanDoc, QuizDoc, ThinkingCard } from '../lib/types'
 import { sortByUpdated, matchesQuery, sortAlphabetically, type Doc } from '../lib/store'
-import { deleteFileBlobs } from '../lib/attachments'
+import { deleteFileBlobs, cloneAttachments } from '../lib/attachments'
 import { formatRelative } from '../lib/format'
 import { Badge, Button, Card, EmptyState, Input, Select, DemoBadge, PageHeader } from './UI'
 import { IconPlan, IconActivity, IconQuiz, IconSearch, IconPlus, IconCopy, IconTrash, IconEdit } from './icons'
@@ -61,16 +61,21 @@ export function DocListPage<T extends ListBase>({ config }: { config: DocListCon
   }, [config.items, subject, grade, sort, query])
 
   const handleCopy = (doc: T) => {
-    const copy = {
-      ...doc,
-      id: `copy-${doc.id.slice(0, 8)}-${Date.now()}`,
-      title: `${doc.title} — نسخة`,
-      demo: undefined,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }
-    config.onSaveCopy(copy)
-    toast('نُسخ العنصر وفُتح محرر النسخة الجديدة.')
+    void (async () => {
+      // النسخة مستقل تمامًا: مرفقات بمعرفات جديدة وكتل ملفات منقولة
+      const attachments = await cloneAttachments(doc.attachments)
+      const copy = {
+        ...doc,
+        id: `copy-${doc.id.slice(0, 8)}-${Date.now()}`,
+        title: `${doc.title} — نسخة`,
+        demo: undefined,
+        attachments,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      }
+      config.onSaveCopy(copy)
+      toast('نُسخ العنصر وفُتح محرر النسخة الجديدة.')
+    })()
   }
 
   const hasAny = config.items.length > 0
