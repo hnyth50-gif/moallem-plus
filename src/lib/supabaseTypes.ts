@@ -24,6 +24,7 @@ export interface SupabaseQuery extends PromiseLike<SupabaseResult> {
   select(columns?: string): SupabaseQuery
   eq(column: string, value: unknown): SupabaseQuery
   in(column: string, values: string[]): SupabaseQuery
+  range(from: number, to: number): SupabaseQuery
   upsert(rows: Array<Record<string, unknown>>, options?: { onConflict?: string }): SupabaseQuery
   delete(): SupabaseQuery
 }
@@ -54,7 +55,7 @@ export interface SupabaseAuth {
     data: { subscription: { unsubscribe(): void } }
   }
   signInWithPassword(credentials: { email: string; password: string }): Promise<SupabaseAuthResponse>
-  signUp(credentials: { email: string; password: string }): Promise<SupabaseSignUpResponse>
+  signUp(credentials: { email: string; password: string; options?: { emailRedirectTo?: string } }): Promise<SupabaseSignUpResponse>
   signOut(): Promise<{ error: { message: string } | null }>
 }
 

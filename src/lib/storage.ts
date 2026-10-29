@@ -14,9 +14,14 @@ export interface SaveResult {
   reason?: 'quota' | 'unavailable'
 }
 
-export function loadAppState(): AppData | null {
+/** يحفظ كل حساب ذاكرته المحلية مستقلة عن بقية الحسابات. المفتاح القديم يبقى للضيف دون تغييره. */
+export function scopedStorageKey(userId: string | null = null): string {
+  return userId ? `${STORAGE_KEY}:user:${userId}` : STORAGE_KEY
+}
+
+export function loadAppState(userId: string | null = null): AppData | null {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
+    const raw = window.localStorage.getItem(scopedStorageKey(userId))
     if (!raw) return null
     const parsed = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object') return null
@@ -26,10 +31,10 @@ export function loadAppState(): AppData | null {
   }
 }
 
-export function saveAppState(data: AppData): SaveResult {
+export function saveAppState(data: AppData, userId: string | null = null): SaveResult {
   try {
     if (!window.localStorage) return { ok: false, reason: 'unavailable' }
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    window.localStorage.setItem(scopedStorageKey(userId), JSON.stringify(data))
     return { ok: true }
   } catch (e) {
     const name = (e as { name?: string } | null)?.name ?? ''
@@ -40,9 +45,9 @@ export function saveAppState(data: AppData): SaveResult {
   }
 }
 
-export function clearAppState(): void {
+export function clearAppState(userId: string | null = null): void {
   try {
-    window.localStorage.removeItem(STORAGE_KEY)
+    window.localStorage.removeItem(scopedStorageKey(userId))
   } catch {
     /* تجاهل */
   }

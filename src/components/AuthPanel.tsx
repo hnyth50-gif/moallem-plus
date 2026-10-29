@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useCloud } from '../state/CloudContext'
+import { useData } from '../state/DataContext'
+import { loadAppState } from '../lib/storage'
 import { useToast } from '../state/ToastContext'
-import { Badge, Button, Card, Field, Input } from './UI'
+import { Badge, Button, Card, ConfirmDialog, Field, Input } from './UI'
 import { IconCloud } from './icons'
 import { formatRelative } from '../lib/format'
 
@@ -19,6 +21,10 @@ const SYNC_LABEL: Record<string, string> = {
 export function AuthPanel() {
   const cloud = useCloud()
   const { toast } = useToast()
+  const { importGuestData } = useData()
+  const [confirmImport, setConfirmImport] = useState(false)
+  const guest = loadAppState()
+  const guestCount = guest ? guest.plans.length + guest.activities.length + guest.quizzes.length + guest.customCards.length + (guest.weekEntries?.length ?? 0) + (guest.certificates?.length ?? 0) : 0
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -84,10 +90,23 @@ export function AuthPanel() {
           <Button variant="outline" onClick={() => cloud.requestSync()} disabled={cloud.syncState === 'syncing'}>
             مزامنة الآن
           </Button>
+          {guestCount > 0 && (
+            <Button variant="outline" onClick={() => setConfirmImport(true)}>
+              نقل مستندات الجهاز ({guestCount}) إلى حسابي
+            </Button>
+          )}
           <Button variant="ghost" onClick={() => void cloud.signOut()}>
             تسجيل الخروج
           </Button>
         </div>
+        <ConfirmDialog
+          open={confirmImport}
+          title="نسخ بيانات الجهاز إلى الحساب"
+          message="سيتم نسخ المستندات القديمة إلى حسابك الحالي دون حذف نسختها المحلية. تحقّق من أنها تخص هذا الحساب فقط قبل المتابعة، واحتفظ بنسخة احتياطية."
+          confirmLabel="نسخ البيانات"
+          onConfirm={() => { importGuestData(); setConfirmImport(false) }}
+          onCancel={() => setConfirmImport(false)}
+        />
       </Card>
     )
   }

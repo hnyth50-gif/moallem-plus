@@ -2,7 +2,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ThemeProvider } from './state/ThemeContext'
 import { ToastProvider } from './state/ToastContext'
-import { CloudProvider } from './state/CloudContext'
+import { CloudProvider, useCloud } from './state/CloudContext'
 import { DataProvider } from './state/DataContext'
 import { Dashboard } from './pages/Dashboard'
 import { PlansList, ActivitiesList, QuizzesList } from './pages/DocLists'
@@ -53,15 +53,26 @@ function Router() {
   )
 }
 
+/** يعيد تركيب مخزن البيانات بمجرد تبديل الحساب؛ فلا تظهر بيانات معلم لآخر. */
+function ScopedDataProvider({ children }: { children: React.ReactNode }) {
+  const { user, status } = useCloud()
+  const userId = status === 'signedIn' ? user?.id ?? null : null
+  return (
+    <DataProvider key={userId ?? 'guest'} storageUserId={userId}>
+      {children}
+    </DataProvider>
+  )
+}
+
 function Providers() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
         <ToastProvider>
           <CloudProvider>
-            <DataProvider>
+            <ScopedDataProvider>
               <Router />
-            </DataProvider>
+            </ScopedDataProvider>
           </CloudProvider>
         </ToastProvider>
       </ThemeProvider>

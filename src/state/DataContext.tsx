@@ -14,7 +14,7 @@ import { loadAppState, saveAppState, SAVE_ERROR_MESSAGES } from '../lib/storage'
 import { applyDemoToData } from '../lib/seed'
 import { parseImport } from '../lib/validate'
 import { clearAllFileBlobs, collectFileIds, deleteFileBlobIds } from '../lib/attachments'
-import { diffDocs, flushNow, pullAll, enqueueCloudOps, docsToOps, mergeCloudIntoLocal } from '../lib/cloudSync'
+import { diffDocs, flushNow, pullAll, enqueueCloudOps, mergeCloudIntoLocal, getPendingDeletes, hasPendingOps, KIND_BY_ARRAY } from '../lib/cloudSync'
 import { useCloud } from './CloudContext'
 import { useToast } from './ToastContext'
 import { makeId } from '../lib/id'
@@ -47,45 +47,25 @@ interface DataContextValue {
   loadDemoData: () => void
   removeDemoData: () => void
   deleteAllData: () => void
+  importGuestData: () => boolean
 }
 
 const DataContext = createContext<DataContextValue | null>(null)
 
-export function DataProvider({ children }: { children: ReactNode }) {
+export function DataProvider({ children, storageUserId = null }: { children: ReactNode; storageUserId?: string | null }) {
   const { toast } = useToast()
   const cloud = useCloud()
-  const [data, setData] = useState<AppData>(emptyData)
-  const [ready, setReady] = useState(false)
-  const loadedOnce = useRef(false)
+  // عزل التخزين المحلي بين الحسابات، مع الاحتفاظ ببيانات الضيف القديمة.
+  const [data, setData] = useState<AppData>(() => loadAppState(storageUserId) ?? emptyData())
+  const ready = true
   // مرآة البيانات لقراءتها خارج دوال التحديث (المزامنة السحابية)
   const dataRef = useRef<AppData>(data)
   // هوية المستخدم للسحابة داخل دوال التحديث دون إعادة إنشائها
-  const syncUserIdRef = useRef<string | null>(null)
+  const syncUserIdRef = useRef<string | null>(storageUserId)
 
   useEffect(() => {
     syncUserIdRef.current = cloud.user?.id ?? null
   }, [cloud.user?.id])
-
-  // التحميل الأولي
-  useEffect(() => {
-    if (loadedOnce.current) return
-    loadedOnce.current = true
-    const stored = loadAppState()
-    if (stored && typeof stored === 'object') {
-      setData((prev) => ({
-        ...prev,
-        ...stored,
-        settings: {
-          profile: {
-            name: stored.settings?.profile?.name ?? prev.settings.profile.name,
-            school: stored.settings?.profile?.school ?? prev.settings.profile.school,
-            semester: stored.settings?.profile?.semester ?? prev.settings.profile.semester,
-          },
-        },
-      }))
-    }
-    setReady(true)
-  }, [])
 
   /** تحديث مضمن: نسخة جديدة ثم حفظ محلي ثم دفع الفرق إلى السحابة عند تسجيل الدخول */
   const update = useCallback(
@@ -103,7 +83,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           settings: { profile: { ...prev.settings.profile } },
         }
         mutator(draft)
-        const result = saveAppState(draft)
+        const result = saveAppState(draft, storageUserId)
         if (!result.ok && result.reason) toast(SAVE_ERROR_MESSAGES[result.reason], 'error')
         dataRef.current = draft
         // مزامنة الفرق: ما أُضيف أو عُدّل أو حُذف يُدفع مؤجلًا إلى Supabase
@@ -114,7 +94,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return draft
       })
     },
-    [toast],
+    [toast, storageUserId],
   )
 
   // الجلب والدمج عند تسجيل الدخول أو عند «مزامنة الآن»
@@ -130,8 +110,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
         // دفع المعلق محليًا موجود يستمر عند العودة
         return
       }
-      // دمج بالأحدث: السحابة والمحلي يتعايشان (كل مستند بالنسخة الأحدث updatedAt)
-      const merged = mergeCloudIntoLocal(dataRef.current, pulled.data ?? {}, pulled.profile)
+      // استبعاد المستندات المحذوفة دون اتصال والمحفوظة في قائمة الدفع المعلقة.
+      // وإلا فإن الجلب قد يعيد إلى الشاشة ما حذفه المعلم قبل انقطاع الإنترنت.
+      const cloudData = { ...(pulled.data ?? {}) }
+      const pending = getPendingDeletes(userId)
+      for (const key of Object.keys(KIND_BY_ARRAY) as Array<keyof typeof KIND_BY_ARRAY>) {
+        const kind = KIND_BY_ARRAY[key]
+        const deleted = new Set(pending.filter((d) => d.kind === kind).map((d) => d.id))
+        if (deleted.size > 0) {
+          const arr = (cloudData[key] ?? []) as Array<{ id: string }>
+          ;(cloudData as Record<string, unknown>)[key] = arr.filter((d) => !deleted.has(d.id))
+        }
+      }
+      const merged = mergeCloudIntoLocal(dataRef.current, cloudData, pulled.profile)
       update((d) => {
         d.plans = merged.plans
         d.activities = merged.activities
@@ -141,10 +132,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
         d.certificates = merged.certificates
         d.settings.profile = merged.settings.profile
       })
-      // دفع كامل من النسخة المدمجة مرة واحدة بعد الدخول (رفع ما هو محلي فقط — upsert مكرر غير مؤذٍ)
-      enqueueCloudOps(docsToOps(merged), [], merged.settings.profile)
-      cloud.markSynced()
-      await flushNow()
+      // إرسال فروق المستندات المحلية فقط؛ تجنب رفع كل السحابة ثانية أو إعادة مستند محذوف.
+      const cloudBase = {
+        plans: cloudData.plans ?? [],
+        activities: cloudData.activities ?? [],
+        quizzes: cloudData.quizzes ?? [],
+        customCards: cloudData.customCards ?? [],
+        weekEntries: cloudData.weekEntries ?? [],
+        certificates: cloudData.certificates ?? [],
+      }
+      const { upserts } = diffDocs(cloudBase, merged)
+      enqueueCloudOps(upserts, [], merged.settings.profile)
+      const ok = await flushNow()
+      if (ok && !hasPendingOps()) cloud.markSynced()
+      else cloud.markSyncError()
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, cloud.status, cloud.user?.id, cloud.syncNonce])
@@ -291,6 +292,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
     toast('أُزيلت جميع العناصر التجريبية.')
   }, [update, toast])
 
+  // نقل يدوي صريح لبيانات الضيف؛ لا ترحل إلى أي حساب دون موافقة.
+  const importGuestData = useCallback((): boolean => {
+    if (!storageUserId) return false
+    const guest = loadAppState(null)
+    if (!guest) return false
+    update((d) => {
+      const merged = mergeData(d, guest)
+      d.plans = merged.plans
+      d.activities = merged.activities
+      d.quizzes = merged.quizzes
+      d.customCards = merged.customCards
+      d.weekEntries = merged.weekEntries
+      d.certificates = merged.certificates
+      d.settings.profile = merged.settings.profile
+    })
+    toast('تم نسخ بيانات الجهاز إلى حسابك، والنسخة الأصلية محفوظة كما هي.')
+    return true
+  }, [storageUserId, update, toast])
+
   const deleteAllData = useCallback(() => {
     update((d) => {
       d.plans = []
@@ -327,6 +347,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       loadDemoData,
       removeDemoData,
       deleteAllData,
+      importGuestData,
     }),
     [
       data,
@@ -350,6 +371,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       loadDemoData,
       removeDemoData,
       deleteAllData,
+      importGuestData,
     ],
   )
 

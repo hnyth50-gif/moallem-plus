@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { cloudConfigured, getSupabaseClient, resetSupabaseClient } from '../lib/supabaseClient'
-import { clearQueue, setFlushListener, setSyncUser } from '../lib/cloudSync'
+import { setFlushListener, setSyncUser } from '../lib/cloudSync'
 import type { SupabaseSession } from '../lib/supabaseTypes'
 
 // ============ سياق الحساب السحابي (Supabase Auth) ============
@@ -73,7 +73,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     setUser(next)
     setSyncUser(next?.id ?? null)
     if (!next) {
-      clearQueue()
+      // احتفظ بالتغييرات السحابية المؤجلة لكل حساب عند تسجيل الخروج.
       setSyncState('idle')
       setLastSyncedAt(null)
     }
@@ -114,6 +114,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       if (cloudConfigured()) {
         resetSupabaseClient()
         setInitNonce((n) => n + 1)
+        setSyncNonce((n) => n + 1)
       }
     }
     window.addEventListener('online', onOnline)
@@ -131,7 +132,13 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   const signUp = useCallback(async (email: string, password: string) => {
     const client = getSupabaseClient()
     if (!client) return { ok: false, reason: 'المزامنة السحابية غير متاحة الآن.' }
-    const { data, error } = await client.auth.signUp({ email: email.trim(), password })
+    // يمنع إلحاق رموز التأكيد بمسار HashRouter الداخلي.
+    const emailRedirectTo = window.location.origin + window.location.pathname
+    const { data, error } = await client.auth.signUp({
+      email: email.trim(),
+      password,
+      options: { emailRedirectTo },
+    })
     if (error) return { ok: false, reason: mapAuthError(error.message) }
     if (!data.session) return { ok: true, reason: 'needs-confirmation' }
     return { ok: true }
@@ -139,7 +146,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     const client = getSupabaseClient()
-    clearQueue()
+    // لا تحذف قائمة التعديلات غير المتزامنة؛ سيُعاد إرسالها عند الدخول مجددًا.
     setSyncUser(null)
     setSyncState('idle')
     setLastSyncedAt(null)

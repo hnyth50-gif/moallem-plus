@@ -36,7 +36,7 @@ export function getSupabaseClient(): SupabaseClient | null {
     cached = globalSupabase!.createClient(
       String(import.meta.env.VITE_SUPABASE_URL),
       String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY),
-      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } },
+      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } },
     )
   } catch {
     cached = null
