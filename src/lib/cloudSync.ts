@@ -97,9 +97,16 @@ export async function pullAll(userId: string): Promise<CloudResult & { data?: Pa
   const client = getSupabaseClient()
   if (!client) return { ok: false, reason: 'unavailable' }
   try {
-    const res = await client.from(NOTES_TABLE).select('*').eq('user_id', userId)
-    if (res.error) return { ok: false, reason: res.error.message.includes('JWT') ? 'auth' : 'network' }
-    const rows = (res.data ?? []) as SupabaseRow[]
+    // Supabase يعيد 1000 صف افتراضيًا؛ نجلب الصفحات كاملة كي لا تختفي المستندات القديمة.
+    const rows: SupabaseRow[] = []
+    const pageSize = 500
+    for (let from = 0; ; from += pageSize) {
+      const res = await client.from(NOTES_TABLE).select('*').eq('user_id', userId).range(from, from + pageSize - 1)
+      if (res.error) return { ok: false, reason: res.error.message.includes('JWT') ? 'auth' : 'network' }
+      const page = (res.data ?? []) as SupabaseRow[]
+      rows.push(...page)
+      if (page.length < pageSize) break
+    }
     const out: Partial<AppData> = {
       plans: [],
       activities: [],
@@ -138,7 +145,7 @@ export async function pushUpserts(ops: CloudOp[], userId: string): Promise<Cloud
   if (ops.length === 0) return { ok: true }
   try {
     const rows = ops.map((op) => toRow(op.kind, op.doc, userId))
-    const res = await client.from(NOTES_TABLE).upsert(rows, { onConflict: 'id' })
+    const res = await client.from(NOTES_TABLE).upsert(rows, { onConflict: 'user_id,id' })
     if (res.error) return { ok: false, reason: res.error.message.includes('JWT') ? 'auth' : 'network' }
     return { ok: true }
   } catch {
@@ -181,7 +188,7 @@ export async function pushProfile(
           updated_at: now,
         },
       ],
-      { onConflict: 'id' },
+      { onConflict: 'user_id,id' },
     )
     if (res.error) return { ok: false, reason: res.error.message.includes('JWT') ? 'auth' : 'network' }
     return { ok: true }
@@ -190,42 +197,114 @@ export async function pushProfile(
   }
 }
 
-// ============ قائمة الدفع المؤجلة (تعمل دون اتصال وتُكرر عند العودة) ============
+// ============ قائمة دفع محفوظة لكل حساب (تنجو من إغلاق الصفحة) ============
 
+// لا نخزن اسم المستخدم أو كلمة المرور؛ كل حساب يحمل قائمة عملياته فقط.
+// عند تسجيل الخروج نترك العمليات المؤجلة في مفتاحه المحدد ولا ننقلها لأي حساب آخر.
+const PENDING_PREFIX = 'moallem-plus:pending:'
 let queueOps: CloudOp[] = []
 let queueDeletes: CloudDelete[] = []
 let queueProfile: AppData['settings']['profile'] | null = null
+let currentUserId: string | null = null
 let flushTimer: ReturnType<typeof setTimeout> | null = null
 let flushing = false
 let onFlushResult: ((ok: boolean) => void) | null = null
 
-/** تسجيل مستمع لنتيجة كل دفعة (لحالة المزامنة في الواجهة) */
+function queueKey(userId: string): string {
+  return `${PENDING_PREFIX}${userId}`
+}
+
+function persistQueue(): void {
+  if (!currentUserId) return
+  try {
+    const contents = { ops: queueOps, deletes: queueDeletes, profile: queueProfile }
+    if (hasPendingOps()) window.localStorage.setItem(queueKey(currentUserId), JSON.stringify(contents))
+    else window.localStorage.removeItem(queueKey(currentUserId))
+  } catch {
+    // يظهر خطأ الحفظ المحلي من طبقة البيانات؛ لا نحذف التغييرات من الذاكرة.
+  }
+}
+
+function restoreQueue(userId: string): void {
+  queueOps = []
+  queueDeletes = []
+  queueProfile = null
+  try {
+    const raw = window.localStorage.getItem(queueKey(userId))
+    if (!raw) return
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return
+    const q = parsed as Record<string, unknown>
+    if (Array.isArray(q.ops)) {
+      queueOps = q.ops.filter((x): x is CloudOp =>
+        x && typeof x === 'object' && typeof x.kind === 'string' &&
+        x.doc && typeof x.doc === 'object' && typeof x.doc.id === 'string' &&
+        Number.isFinite(x.doc.updatedAt))
+    }
+    if (Array.isArray(q.deletes)) {
+      queueDeletes = q.deletes.filter((x): x is CloudDelete =>
+        x && typeof x === 'object' && typeof x.kind === 'string' && typeof x.id === 'string')
+    }
+    if (q.profile && typeof q.profile === 'object') {
+      const p = q.profile as Record<string, unknown>
+      if (typeof p.name === 'string' && typeof p.school === 'string' && typeof p.semester === 'string') {
+        queueProfile = { name: p.name, school: p.school, semester: p.semester }
+      }
+    }
+  } catch {
+    // قائمة قديمة غير قابلة للقراءة: تبقى في التخزين حتى يمكن استعادتها يدويًا.
+  }
+}
+
+/** تسجيل مستمع لنتيجة كل عملية دفع. */
 export function setFlushListener(listener: ((ok: boolean) => void) | null): void {
   onFlushResult = listener
 }
 
-function enqueue(ops: CloudOp[], deletes: CloudDelete[], profile: AppData['settings']['profile'] | null): void {
-  queueOps = mergeOps(queueOps, ops)
-  const deleteIds = new Set(deletes.map((d) => `${d.kind}:${d.id}`))
-  queueOps = queueOps.filter((op) => !deleteIds.has(`${op.kind}:${op.doc.id}`))
-  queueDeletes = [...queueDeletes, ...deletes]
-  const deletedSet = new Set(queueDeletes.map((d) => `${d.kind}:${d.id}`))
-  queueOps = queueOps.filter((op) => !deletedSet.has(`${op.kind}:${op.doc.id}`))
-  if (profile) queueProfile = profile
-  scheduleFlush()
+/** دمج العمليات: الأحدث يفوز ضمن الحساب نفسه. */
+function mergeOps(existing: CloudOp[], incoming: CloudOp[]): CloudOp[] {
+  const map = new Map<string, CloudOp>()
+  for (const op of [...existing, ...incoming]) {
+    const key = `${op.kind}:${op.doc.id}`
+    const current = map.get(key)
+    if (!current || op.doc.updatedAt >= current.doc.updatedAt) map.set(key, op)
+  }
+  return [...map.values()]
 }
 
-/** تسجيل عمليات في قائمة الدفع المؤجل (من DataContext عند كل تعديل محلي) */
+function keyFor(kind: string, id: string): string {
+  return `${kind}:${id}`
+}
+
+/** إضافة عمليات إلى قائمة متينة؛ التعديل بعد الحذف يلغي الحذف والعكس. */
 export function enqueueCloudOps(
   ops: CloudOp[],
   deletes: CloudDelete[] = [],
   profile: AppData['settings']['profile'] | null = null,
 ): void {
-  if (ops.length === 0 && deletes.length === 0 && !profile) return
-  enqueue(ops, deletes, profile)
+  if (!currentUserId || (ops.length === 0 && deletes.length === 0 && !profile)) return
+
+  // العمليات الجديدة أحدث من المتبقي من الدفعات السابقة.
+  const upserting = new Set(ops.map((o) => keyFor(o.kind, o.doc.id)))
+  queueDeletes = queueDeletes.filter((d) => !upserting.has(keyFor(d.kind, d.id)))
+
+  const deleting = new Set(deletes.map((d) => keyFor(d.kind, d.id)))
+  queueOps = mergeOps(queueOps, ops).filter((o) => !deleting.has(keyFor(o.kind, o.doc.id)))
+
+  const deleted = new Map(queueDeletes.map((d) => [keyFor(d.kind, d.id), d]))
+  for (const d of deletes) deleted.set(keyFor(d.kind, d.id), d)
+  queueDeletes = [...deleted.values()]
+  if (profile) queueProfile = profile
+  persistQueue()
+  scheduleFlush()
 }
 
-/** تحويل كل مستندات AppData إلى عمليات رفع (للمزامنة الأولية عند تسجيل الدخول) */
+/** يعيد عمليات الحذف المعلقة للمستخدم الحالي فقط، لمنع إحياء عناصر محذوفة دون اتصال. */
+export function getPendingDeletes(userId: string): CloudDelete[] {
+  return userId === currentUserId ? [...queueDeletes] : []
+}
+
+/** فرق المستندات بين دفعتين من البيانات. */
 export function docsToOps(data: Pick<AppData, 'plans' | 'activities' | 'quizzes' | 'customCards' | 'weekEntries' | 'certificates'>): CloudOp[] {
   const ops: CloudOp[] = []
   for (const key of Object.keys(KIND_BY_ARRAY) as Array<keyof typeof KIND_BY_ARRAY>) {
@@ -235,7 +314,7 @@ export function docsToOps(data: Pick<AppData, 'plans' | 'activities' | 'quizzes'
   return ops
 }
 
-/** دمج بيانات السحابة مع المحلية بالأحدث (updatedAt لكل مستند بالمعرف) */
+/** دمج المستندات السحابية مع المستندات المحفوظة للحساب نفسه فقط. */
 export function mergeCloudIntoLocal(
   local: AppData,
   cloud: Partial<AppData>,
@@ -271,71 +350,81 @@ export function mergeCloudIntoLocal(
   }
 }
 
-/** دمج العمليات: الأحدث فوزًا حسب updatedAt لكل معرف */
-function mergeOps(existing: CloudOp[], incoming: CloudOp[]): CloudOp[] {
-  const map = new Map<string, CloudOp>()
-  for (const op of [...existing, ...incoming]) {
-    const key = `${op.kind}:${op.doc.id}`
-    const current = map.get(key)
-    if (!current || op.doc.updatedAt >= current.doc.updatedAt) map.set(key, op)
-  }
-  return [...map.values()]
-}
-
 function scheduleFlush(): void {
-  if (flushTimer !== null) return
+  if (!currentUserId || flushTimer !== null) return
   flushTimer = setTimeout(() => {
     flushTimer = null
     void flushNow()
   }, 1200)
 }
 
-/** تنفيذ الدفعة المعلقة فورًا (تُستدعى داخليًا وعند «مزامنة الآن»/عودة الاتصال) */
+/** تشغيل الدفعة مع الحفاظ على العمليات الجديدة التي تصل أثناء تنفيذها. */
 export async function flushNow(): Promise<boolean> {
   if (flushing) return false
   const userId = currentUserId
   if (!userId) return false
-  const ops = queueOps
-  const deletes = queueDeletes
-  const profile = queueProfile
+  const ops = [...queueOps]
+  const deletes = [...queueDeletes]
+  const profile = queueProfile ? { ...queueProfile } : null
   if (ops.length === 0 && deletes.length === 0 && !profile) return true
+
   flushing = true
-  const [up, del, prof] = await Promise.all([
-    pushUpserts(ops, userId),
-    pushDeletes(deletes, userId),
-    profile ? pushProfile(profile, userId) : Promise.resolve({ ok: true } as CloudResult),
-  ])
+  // نحافظ على الحذف بعد الرفع، حتى لا تعود المستندات التي حُذفت في أثناء الإرسال.
+  const up = await pushUpserts(ops, userId)
+  const del = await pushDeletes(deletes, userId)
+  const prof = profile ? await pushProfile(profile, userId) : ({ ok: true } as CloudResult)
   const ok = up.ok && del.ok && prof.ok
-  if (ok) {
-    queueOps = []
-    queueDeletes = []
-    queueProfile = null
-  }
   flushing = false
+
+  // يمكن أن يسجل مستخدم آخر الدخول أثناء تنفيذ الطلبات القديمة.
+  if (currentUserId !== userId) return ok
+
+  if (up.ok) {
+    const completed = new Map(ops.map((o) => [keyFor(o.kind, o.doc.id), o.doc.updatedAt]))
+    queueOps = queueOps.filter((o) => completed.get(keyFor(o.kind, o.doc.id)) !== o.doc.updatedAt)
+  }
+  if (del.ok) {
+    const completed = new Set(deletes.map((d) => keyFor(d.kind, d.id)))
+    queueDeletes = queueDeletes.filter((d) => !completed.has(keyFor(d.kind, d.id)))
+  }
+  if (prof.ok && profile && JSON.stringify(queueProfile) === JSON.stringify(profile)) queueProfile = null
+
+  persistQueue()
   onFlushResult?.(ok)
+  if (hasPendingOps() && ok) scheduleFlush()
   return ok
 }
 
-/** هل توجد دفعة معلقة؟ */
 export function hasPendingOps(): boolean {
   return queueOps.length > 0 || queueDeletes.length > 0 || queueProfile !== null
 }
 
-/** تفريغ القائمة يدويًا (خروج/اختبار) */
+/** حذف قائمة عمليات الحساب الحالي فقط عند طلب صريح (أو في الاختبارات). */
 export function clearQueue(): void {
-  queueOps = []
-  queueDeletes = []
-  queueProfile = null
   if (flushTimer !== null) {
     clearTimeout(flushTimer)
     flushTimer = null
   }
+  queueOps = []
+  queueDeletes = []
+  queueProfile = null
+  persistQueue()
 }
 
-let currentUserId: string | null = null
-
-/** تعيين هوية المستخدم الحالي للقائمة (من CloudContext) */
+/** تعيين الحساب دون فقدان القائمة القديمة أو نقلها إلى حساب آخر. */
 export function setSyncUser(userId: string | null): void {
+  if (currentUserId === userId) return
+  if (currentUserId) persistQueue()
+  if (flushTimer !== null) {
+    clearTimeout(flushTimer)
+    flushTimer = null
+  }
   currentUserId = userId
-  if (!userId) clearQueue()
+  queueOps = []
+  queueDeletes = []
+  queueProfile = null
+  if (userId) {
+    restoreQueue(userId)
+    if (hasPendingOps()) scheduleFlush()
+  }
 }
