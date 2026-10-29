@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { useTheme } from '../state/ThemeContext'
+import { useCloud } from '../state/CloudContext'
 import { cn } from '../lib/cn'
 import { Button } from './UI'
 import { ClockWidget } from './ClockWidget'
@@ -78,6 +79,7 @@ function ThemeToggle() {
 }
 
 export function Layout({ children }: { children: ReactNode }) {
+  const cloud = useCloud()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const navPanelRef = useRef<HTMLDivElement>(null)
@@ -193,7 +195,9 @@ export function Layout({ children }: { children: ReactNode }) {
         <footer className="no-print border-t border-slate-200 bg-white py-5 dark:border-slate-700 dark:bg-slate-900">
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 text-center sm:flex-row sm:justify-between sm:text-start">
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              كل بياناتك محفوظة على جهازك فقط (‏localStorage) — لا خادم ولا حسابات.{' '}
+              {cloud.status === 'signedIn'
+              ? 'مستندات حسابك محفوظة محليًا وتُزامن مع Supabase عند نجاح الاتصال؛ المرفقات الملفية على هذا الجهاز حاليًا.'
+              : 'بيانات الضيف محفوظة على هذا الجهاز. يمكنك تفعيل حساب ومزامنة سحابية من الإعدادات.'}{' '}
               <Link to="/settings" className="underline underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300">
                 الإعدادات والأدوات
               </Link>

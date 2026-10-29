@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useData } from '../state/DataContext'
 import { useTheme } from '../state/ThemeContext'
+import { useCloud } from '../state/CloudContext'
 import { useToast } from '../state/ToastContext'
 import { estimateKb } from '../lib/storage'
 import { ACCENTS, applyAccent, restoreAccent, saveAccent } from '../lib/accent'
@@ -16,6 +17,7 @@ import { formatPoints } from '../lib/format'
 export function SettingsPage() {
   const { data, updateProfile, exportBackup, importBackup, loadDemoData, removeDemoData, deleteAllData } = useData()
   const { theme, setTheme } = useTheme()
+  const cloud = useCloud()
   const { toast } = useToast()
   const [accent, setAccent] = useState(() => restoreAccent())
   const profile = data.settings.profile
@@ -231,7 +233,9 @@ export function SettingsPage() {
               منطقة الخطر
             </div>
             <p className="mb-3 text-xs leading-relaxed text-rose-600 dark:text-rose-300">
-              حذف كل العناصر والإعدادات من هذا المتصفح. لا تراجع بعد الحذف — صدّر نسخة احتياطية أولًا.
+              {cloud.status === 'signedIn'
+                ? 'قد يمتد حذف المستندات إلى حسابك السحابي عند مزامنته. صدّر نسخة احتياطية وتأكد من هوية الحساب أولًا.'
+                : 'حذف المستندات من هذا المتصفح. لا رجعة بعد الحذف — صدّر نسخة احتياطية أولًا.'}
             </p>
             <Button variant="danger" size="sm" onClick={() => setConfirmDeleteAll(true)}>
               حذف جميع بياناتي
@@ -243,7 +247,8 @@ export function SettingsPage() {
         <Card className="space-y-2">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">الخصوصية والأمان</h2>
           <ul className="list-disc space-y-1.5 ps-5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            <li>لا يوجد أي خادم أو حساب: يُحفظ كل شيء في متصفحك (localStorage) ولا يغادر جهازك أبدًا.</li>
+            <li>تُحفظ بيانات الضيف في هذا المتصفح. عند تسجيل دخولك تُحفظ مستندات حسابك محليًا وتُزامَن مع Supabase بعد نجاح الاتصال.</li>
+            <li>مرفقات الملفات تُحفظ في IndexedDB على هذا الجهاز ولم يبدأ نقل محتواها إلى التخزين السحابي بعد.</li>
             <li>لا يطلب التطبيق أي صلاحيات أو وصول إلى الميكروفون أو الكاميرا أو المجلدات.</li>
             <li>النسخ الاحتياطية تصدّرها وتستوردها بنفسك — احفظ الملف في مكان موثوق.</li>
             <li>تنظيف بيانات المتصفح (السجل/الملفات) يحذف بيانات التطبيق؛ استخدم التصدير أولًا.</li>
@@ -272,7 +277,9 @@ export function SettingsPage() {
       <ConfirmDialog
         open={confirmDeleteAll}
         title="حذف كل البيانات"
-        message="سيتم حذف كل الخطط والأنشطة والاختبارات والبطاقات والإعدادات من هذا المتصفح نهائيًا."
+        message={cloud.status === 'signedIn'
+          ? 'سيحذف مستندات هذا الحساب محليًا ويُرسل حذفها إلى السحابة عند المزامنة. احتفظ بنسخة احتياطية أولًا. لن يُحذف حسابك نفسه.'
+          : 'سيتم حذف المستندات المحلية من هذا المتصفح نهائيًا. صدّر نسخة احتياطية أولًا.'}
         confirmLabel="نعم، احذف الكل"
         danger
         requireText="حذف"
