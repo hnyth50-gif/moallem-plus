@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ThemeProvider } from './state/ThemeContext'
@@ -54,7 +55,7 @@ function Router() {
 }
 
 /** يعيد تركيب مخزن البيانات بمجرد تبديل الحساب؛ فلا تظهر بيانات معلم لآخر. */
-function ScopedDataProvider({ children }: { children: React.ReactNode }) {
+function ScopedDataProvider({ children }: { children: ReactNode }) {
   const { user, status } = useCloud()
   const userId = status === 'signedIn' ? user?.id ?? null : null
   return (
