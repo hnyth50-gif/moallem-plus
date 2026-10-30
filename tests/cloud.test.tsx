@@ -195,9 +195,17 @@ describe('CloudContext', () => {
 
 describe('تسجيل الدخول عبر Google', () => {
   const oauthCalls: Array<{ provider: string; options?: { redirectTo?: string } }> = []
+  const envBackup = {
+    url: import.meta.env.VITE_SUPABASE_URL,
+    key: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  }
 
   beforeEach(() => {
     oauthCalls.length = 0
+    // إعدادات السحابة غير موجودة في بيئة CI أثناء الاختبار — نضبطها برمجيًا
+    // مع عميل مزيّف على النطاق العام لنافذة CDN حتى يكتمل مسار OAuth
+    import.meta.env.VITE_SUPABASE_URL = 'https://test-project.supabase.co'
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test-key'
     const fakeClient = {
       auth: {
         getSession: async () => ({ data: { session: null }, error: null }),
@@ -220,6 +228,8 @@ describe('تسجيل الدخول عبر Google', () => {
 
   afterEach(() => {
     delete (window as unknown as { supabase?: unknown }).supabase
+    import.meta.env.VITE_SUPABASE_URL = envBackup.url
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY = envBackup.key
     resetSupabaseClient()
   })
 
