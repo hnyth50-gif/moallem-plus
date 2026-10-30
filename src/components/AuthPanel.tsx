@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useCloud } from '../state/CloudContext'
 import { useToast } from '../state/ToastContext'
 import { Badge, Button, Card, Field, Input } from './UI'
-import { IconCloud } from './icons'
+import { IconCloud, IconGoogle } from './icons'
 import { formatRelative } from '../lib/format'
 
 // ============ الحساب والمزامنة السحابية (Supabase) ============
@@ -69,6 +69,14 @@ export function AuthPanel() {
     setPassword('')
   }
 
+  // تسجيل الدخول عبر Google: عند النجاح يُحوَّل المتصفح إلى شاشة Google ثم يعود إلى الموقع بالجلسة
+  const googleSignIn = async () => {
+    setBusy(true)
+    const res = await cloud.signInWithGoogle()
+    setBusy(false)
+    if (!res.ok) toast(res.reason ?? 'تعذر إكمال العملية.', 'error')
+  }
+
   if (cloud.status === 'signedIn' && cloud.user) {
     const syncLabel = cloud.syncState === 'idle' && cloud.lastSyncedAt ? `متزامنة — آخر مزامنة ${formatRelative(cloud.lastSyncedAt)}` : (SYNC_LABEL[cloud.syncState] ?? 'متزامنة')
     return (
@@ -132,6 +140,17 @@ export function AuthPanel() {
           إنشاء حساب جديد
         </Button>
       </div>
+
+      <div className="flex items-center gap-3" role="separator" aria-label="أو">
+        <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+        <span className="text-xs text-slate-400 dark:text-slate-500">أو</span>
+        <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+      </div>
+
+      <Button variant="outline" className="w-full" onClick={() => void googleSignIn()} disabled={busy}>
+        <IconGoogle className="h-4 w-4" />
+        {busy ? 'جارٍ الاتصال…' : 'تسجيل الدخول باستخدام Google'}
+      </Button>
     </Card>
   )
 }

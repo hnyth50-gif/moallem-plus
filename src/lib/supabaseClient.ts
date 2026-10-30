@@ -36,7 +36,9 @@ export function getSupabaseClient(): SupabaseClient | null {
     cached = globalSupabase!.createClient(
       String(import.meta.env.VITE_SUPABASE_URL),
       String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY),
-      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } },
+      // detectSessionInUrl: يلتقط جلسة العودة من Google OAuth (وروابط تأكيد البريد) تلقائيًا،
+      // وflowType pkce هو التدفق الموصى به للمصادقة على الصفحات الثابتة.
+      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } },
     )
   } catch {
     cached = null

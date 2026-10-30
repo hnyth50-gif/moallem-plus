@@ -48,6 +48,12 @@ export interface SupabaseSignUpResponse {
   error: { message: string } | null
 }
 
+/** نتيجة بدء تدفق OAuth (مثل Google) */
+export interface SupabaseOAuthResponse {
+  data: { provider: string; url?: string }
+  error: { message: string } | null
+}
+
 export interface SupabaseAuth {
   getSession(): Promise<{ data: { session: SupabaseSession | null }; error: { message: string } | null }>
   onAuthStateChange(callback: (event: string, session: SupabaseSession | null) => void): {
@@ -55,6 +61,7 @@ export interface SupabaseAuth {
   }
   signInWithPassword(credentials: { email: string; password: string }): Promise<SupabaseAuthResponse>
   signUp(credentials: { email: string; password: string }): Promise<SupabaseSignUpResponse>
+  signInWithOAuth(options: { provider: string; options?: { redirectTo?: string } }): Promise<SupabaseOAuthResponse>
   signOut(): Promise<{ error: { message: string } | null }>
 }
 

@@ -243,6 +243,14 @@ export const IconCloud = (p: IconProps) => (
   </Base>
 )
 
+/** شعار Google مبسط خطي (حرف G) — تسجيل الدخول عبر Google */
+export const IconGoogle = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" />
+    <path d="M19.5 12H12" />
+  </Base>
+)
+
 /** شعار يوتيوب مبسط خطي — مرفق فيديو */
 export const IconYouTube = (p: IconProps) => (
   <Base {...p}>

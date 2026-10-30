@@ -3,7 +3,7 @@
 // نتائج «غير متاح» بدل الانفجار، وتبقى المزامنة المحلية سليمة.
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { CloudProvider, useCloud } from '../src/state/CloudContext'
 import App from '../src/App'
 import {
@@ -188,5 +188,65 @@ describe('CloudContext', () => {
   it('التطبيق كاملًا يعمل مع CloudProvider (المزامنة اختيارية ولا تعطل شيئًا)', () => {
     render(<App />)
     expect(screen.getByRole('navigation', { name: 'التنقل الرئيسي' })).toBeTruthy()
+  })
+})
+
+// ============ تسجيل الدخول عبر Google (OAuth) ============
+
+describe('تسجيل الدخول عبر Google', () => {
+  const oauthCalls: Array<{ provider: string; options?: { redirectTo?: string } }> = []
+
+  beforeEach(() => {
+    oauthCalls.length = 0
+    const fakeClient = {
+      auth: {
+        getSession: async () => ({ data: { session: null }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+        signInWithPassword: async () => ({ data: { session: null }, error: null }),
+        signUp: async () => ({ data: { session: null, user: null }, error: null }),
+        signInWithOAuth: async (options: { provider: string; options?: { redirectTo?: string } }) => {
+          oauthCalls.push(options)
+          return { data: { provider: 'google' }, error: null }
+        },
+        signOut: async () => ({ error: null }),
+      },
+      from: () => {
+        throw new Error('from() غير مستخدم في اختبارات المصادقة')
+      },
+    }
+    ;(window as unknown as { supabase?: unknown }).supabase = { createClient: () => fakeClient }
+    resetSupabaseClient()
+  })
+
+  afterEach(() => {
+    delete (window as unknown as { supabase?: unknown }).supabase
+    resetSupabaseClient()
+  })
+
+  it('signInWithGoogle يستدعي OAuth بمزود google ويعيد التوجيه إلى عنوان الصفحة الحالية', async () => {
+    let result: { ok: boolean } | undefined
+    function Probe() {
+      const cloud = useCloud()
+      return <button onClick={() => void cloud.signInWithGoogle().then((r) => (result = r))}>ابدأ</button>
+    }
+    render(
+      <CloudProvider>
+        <Probe />
+      </CloudProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'ابدأ' }))
+    await waitFor(() => expect(oauthCalls).toHaveLength(1))
+    expect(oauthCalls[0].provider).toBe('google')
+    expect(oauthCalls[0].options?.redirectTo).toBe(window.location.origin + window.location.pathname)
+    expect(result?.ok).toBe(true)
+  })
+
+  it('زر «تسجيل الدخول باستخدام Google» ظاهر في لوحة الحساب ويستدعي OAuth', async () => {
+    window.location.hash = '#/settings'
+    render(<App />)
+    const btn = screen.getByRole('button', { name: /باستخدام Google/ })
+    fireEvent.click(btn)
+    await waitFor(() => expect(oauthCalls).toHaveLength(1))
+    expect(oauthCalls[0].provider).toBe('google')
   })
 })

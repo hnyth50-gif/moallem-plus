@@ -23,6 +23,8 @@ export interface CloudContextValue {
   lastSyncedAt: number | null
   signIn: (email: string, password: string) => Promise<{ ok: boolean; reason?: string }>
   signUp: (email: string, password: string) => Promise<{ ok: boolean; reason?: string }>
+  /** بدء تسجيل الدخول عبر Google OAuth — عند النجاح يُحوَّل المتصفح إلى Google ثم يعود إلى الموقع */
+  signInWithGoogle: () => Promise<{ ok: boolean; reason?: string }>
   signOut: () => Promise<void>
   /** يزيد عدادًا يطلب من طبقة البيانات إعادة سحب/دفع فوري («مزامنة الآن») */
   requestSync: () => void
@@ -137,6 +139,16 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     return { ok: true }
   }, [])
 
+  const signInWithGoogle = useCallback(async () => {
+    const client = getSupabaseClient()
+    if (!client) return { ok: false, reason: 'المزامنة السحابية غير متاحة الآن.' }
+    // العودة إلى عنوان الموقع نفسه على GitHub Pages بعد إتمام المصادقة لدى Google
+    const redirectTo = window.location.origin + window.location.pathname
+    const { error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })
+    if (error) return { ok: false, reason: mapAuthError(error.message) }
+    return { ok: true }
+  }, [])
+
   const signOut = useCallback(async () => {
     const client = getSupabaseClient()
     clearQueue()
@@ -179,6 +191,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       lastSyncedAt,
       signIn,
       signUp,
+      signInWithGoogle,
       signOut,
       requestSync,
       syncNonce,
@@ -186,7 +199,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       markSynced,
       markSyncError,
     }),
-    [status, user, syncState, lastSyncedAt, signIn, signUp, signOut, requestSync, syncNonce, markSyncing, markSynced, markSyncError],
+    [status, user, syncState, lastSyncedAt, signIn, signUp, signInWithGoogle, signOut, requestSync, syncNonce, markSyncing, markSynced, markSyncError],
   )
 
   return <CloudContext.Provider value={value}>{children}</CloudContext.Provider>
