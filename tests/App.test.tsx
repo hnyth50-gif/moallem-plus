@@ -47,6 +47,29 @@ describe('الصفحة الرئيسية', () => {
   })
 })
 
+describe('الرئيسية الحية (بطاقة الترحيب وتغطية الأسبوع)', () => {
+  it('بطاقة الترحيب تعرض الساعة الحية وحلقة التغطية وبطاقة خطط اليوم فارغة', () => {
+    render(<App />)
+    expect(screen.getByRole('timer', { name: 'الساعة الحية' })).toBeTruthy()
+    expect(screen.getByRole('img', { name: /تغطية خطط الأسبوع: 0%/ })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'خطط اليوم' })).toBeTruthy()
+    expect(screen.getByText(/لا توجد خطط مسجلة لتاريخ اليوم/)).toBeTruthy()
+  })
+
+  it('خطة بتاريخ اليوم تظهر في «خطط اليوم» وتشحن حلقة التغطية', () => {
+    const data = emptyData()
+    // بصيغة ISO المبطنة المطابقة لحقل تاريخ الخطة (مختلفة عن dayKey المستخدم للبطاقة اليومية)
+    const d = new Date()
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    data.plans = [makePlan({ title: 'خطة اليوم الخاص', classDate: iso })]
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    render(<App />)
+    // العنوان ظاهر مرتين: في بطاقة «خطط اليوم» وفي «أحدث أعمالك»
+    expect(screen.getAllByText('خطة اليوم الخاص').length).toBe(2)
+    expect(screen.getByRole('img', { name: /تغطية خطط الأسبوع: [1-9]/ })).toBeTruthy()
+  })
+})
+
 describe('التنقل بين الشاشات', () => {
   it('الانتقال إلى قائمة الخطط يعرض الحالة الفارغة وزر الإنشاء', () => {
     render(<App />)

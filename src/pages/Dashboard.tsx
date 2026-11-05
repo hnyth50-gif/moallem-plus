@@ -2,14 +2,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
 import { useData } from '../state/DataContext'
 import { sortByUpdated } from '../lib/store'
-import { formatRelative, formatPoints, dayKey } from '../lib/format'
+import { formatRelative, formatPoints, dayKey, formatHijri, formatDate, formatTime } from '../lib/format'
 import { BUILTIN_CARDS, cardOfDay, CATEGORY_COLORS, CATEGORY_LABELS } from '../lib/strategies'
-import { Badge, Button, Card, DemoBadge, PageHeader, EmptyState, IconBadge } from '../components/UI'
-import { ClockCard } from '../components/ClockWidget'
-import { IconPlan, IconActivity, IconQuiz, IconCards, IconPlus, IconSparkles, IconAlert } from '../components/icons'
+import { Badge, Button, Card, DemoBadge, EmptyState, IconBadge } from '../components/UI'
+import { useNow } from '../components/ClockWidget'
+import { IconPlan, IconActivity, IconQuiz, IconCards, IconPlus, IconSparkles, IconAlert, IconSchool } from '../components/icons'
 import { DocIcon, DocKindBadge } from '../components/DocListPage'
 import { GoldFlourish } from '../components/GoldFlourish'
-import type { ActivityDoc, PlanDoc, QuizDoc, ThinkingCard } from '../lib/types'
+import type { PlanDoc, ActivityDoc, QuizDoc, ThinkingCard } from '../lib/types'
 
 // ============ لوحة التحكم ============
 // الصفحة الافتتاحية: تحية، اختصارات سريعة، إحصاءات، أحدث الأعمال، وبطاقة اليوم.
@@ -26,10 +26,78 @@ function greeting(): string {
   return 'مساء الخير'
 }
 
+/** تحويل تاريخ محلي إلى ISO بصيغة yyyy-mm-dd (دون إزاحة المنطقة الزمنية) */
+function localIso(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
+/** نسبة أيام الأسبوع الدراسي (الأحد..الخميس) التي تحمل خطة مسجلة بتاريخها */
+function weekCoverage(plans: PlanDoc[]): number {
+  const now = new Date()
+  const sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
+  const dates = new Set(plans.map((p) => p.classDate).filter((x): x is string => Boolean(x)))
+  let covered = 0
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() + i)
+    if (dates.has(localIso(d))) covered++
+  }
+  return covered / 5
+}
+
+/** حلقة الإنجاز — قوس ذهبي على مسار أخضر فاتح */
+function ProgressRing({ value, caption }: { value: number; caption: string }) {
+  const r = 33
+  const c = 2 * Math.PI * r
+  const pct = Math.round(value * 100)
+  return (
+    <div className="relative flex h-28 w-28 items-center justify-center" role="img" aria-label={`${caption}: ${pct}%`}>
+      <svg viewBox="0 0 80 80" className="h-28 w-28 -rotate-90" aria-hidden="true">
+        <circle cx="40" cy="40" r={r} fill="none" stroke="rgb(var(--brand-100))" strokeWidth="7" className="dark:opacity-25" />
+        <circle
+          cx="40"
+          cy="40"
+          r={r}
+          fill="none"
+          stroke="rgb(var(--brand-600))"
+          strokeWidth="7"
+          strokeLinecap="round"
+          strokeDasharray={`${value * c} ${c}`}
+        />
+      </svg>
+      <div className="absolute text-center">
+        <p className="text-xl font-extrabold tabular-nums text-slate-900 dark:text-white" aria-hidden="true">
+          {pct}٪
+        </p>
+        <p className="text-[10px] font-semibold text-slate-400" aria-hidden="true">
+          تغطية
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function Dashboard() {
   const { data, loadDemoData } = useData()
   const navigate = useNavigate()
   const name = data.settings.profile.name.trim()
+  const school = data.settings.profile.school.trim()
+
+  // الساعة والتاريخ الحيان (تتحدث كل ثانية عبر useNow)
+  const now = useNow()
+  const time = formatTime(now)
+  const hijri = formatHijri(now)
+  const gregorian = formatDate(now)
+
+  // بيانات اليوم والأسبوع الحقيقية من مستندات المعلم
+  const todayIso = localIso(new Date())
+  const todayPlans = useMemo(
+    () => data.plans.filter((p) => p.classDate === todayIso),
+    [data.plans, todayIso],
+  )
+  const coverage = useMemo(() => weekCoverage(data.plans), [data.plans])
+  const monogram = name ? name.charAt(0) : 'م'
 
   const counts = {
     plan: data.plans.length,
@@ -67,16 +135,102 @@ export function Dashboard() {
 
   return (
     <>
-      <div className="relative">
-        <GoldFlourish className="pointer-events-none absolute -top-3 left-0 hidden w-44 sm:block" />
-        <PageHeader
-          title={`${greeting()}${name ? `، ${name}` : ' أيها المعلم'} 👋`}
-          subtitle="مساحتك الموّحدة لإعداد الدروس — كل شيء يعمل على جهازك دون اتصال."
-        />
-      </div>
+      {/* بطاقة الترحيب الحية — هوية «زمرد وذهب» من التصميم الجديد */}
+      <section
+        aria-labelledby="dash-greeting"
+        className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-l from-brand-950 via-brand-900 to-brand-800 p-5 text-white shadow-card sm:p-6"
+      >
+        <GoldFlourish className="pointer-events-none absolute -top-2 left-0 w-44 opacity-80 sm:w-56" />
+        <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+          <div className="min-w-0 flex-1">
+            <h1 id="dash-greeting" className="text-xl font-extrabold sm:text-2xl">
+              {greeting()}
+              <span className="text-gold-300">{name ? `، ${name}` : ' أيها المعلم'}</span> 👋
+            </h1>
+            <p className="mt-1 text-sm leading-relaxed text-brand-100/85">
+              مساحتك الموّحدة لإعداد الدروس — كل شيء يعمل على جهازك دون اتصال.
+            </p>
+            {school && (
+              <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-gold-300/90">
+                <IconSchool className="h-3.5 w-3.5" aria-hidden="true" />
+                {school}
+              </p>
+            )}
+            <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="الوقت والتاريخ اليوم">
+              {hijri && (
+                <span className="inline-flex flex-col items-start rounded-xl border border-gold-400/40 bg-white/10 px-3 py-1">
+                  <span className="text-[9px] font-bold leading-none text-gold-300/90">الهجري</span>
+                  <span className="text-xs font-bold leading-tight">{hijri}</span>
+                </span>
+              )}
+              {gregorian && (
+                <span className="inline-flex flex-col items-start rounded-xl bg-white/10 px-3 py-1">
+                  <span className="text-[9px] font-bold leading-none text-brand-100/80">الميلادي</span>
+                  <span className="text-xs font-semibold leading-tight text-brand-50">{gregorian}</span>
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <p className="text-4xl font-extrabold tabular-nums tracking-tight sm:text-5xl" role="timer" aria-label="الساعة الحية">
+              {time}
+            </p>
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-gold-400/70 bg-brand-950/50 text-xl font-bold text-gold-300"
+              aria-hidden="true"
+            >
+              {monogram}
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* الساعة والتاريخ الهجري والميلادي */}
-      <ClockCard className="mb-6" />
+      {/* تغطية الأسبوع وخطط اليوم — من بيانات المستندات الفعلية */}
+      <div className="mb-8 grid gap-4 lg:grid-cols-3">
+        <Card className="flex items-center gap-4 p-4">
+          <ProgressRing value={coverage} caption="تغطية خطط الأسبوع" />
+          <div className="min-w-0">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">تغطية خطط الأسبوع</h2>
+            <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              أيام الدراسة (الأحد–الخميس) التي حملت خطة بتاريخها هذا الأسبوع.
+            </p>
+            <Link to="/plans/new" className="mt-2 inline-block text-xs font-bold text-brand-700 underline underline-offset-2 dark:text-brand-300">
+              إضافة خطة لتغطية أكبر +
+            </Link>
+          </div>
+        </Card>
+
+        <Card className="p-4 lg:col-span-2">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">خطط اليوم</h2>
+            <Badge>{todayPlans.length} خطة</Badge>
+          </div>
+          {todayPlans.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-4 text-center text-xs text-slate-500 dark:border-slate-600 dark:bg-slate-800/40 dark:text-slate-400">
+              لا توجد خطط مسجلة لتاريخ اليوم — سجّل خطة بتاريخ اليوم لتظهر هنا.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {todayPlans.map((p) => (
+                <li key={p.id}>
+                  <Link
+                    to={`/plans/${p.id}`}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm transition hover:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500"
+                  >
+                    <span className="min-w-0 truncate font-semibold text-slate-800 dark:text-slate-100">
+                      {p.title}
+                    </span>
+                    <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+                      {p.subject}
+                      {p.durationMinutes ? ` · ${p.durationMinutes} دقيقة` : ''}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
 
       {demoCounts > 0 && (
         <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800/60 dark:bg-amber-900/30 dark:text-amber-200">

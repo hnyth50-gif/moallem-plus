@@ -7,13 +7,18 @@ import { cn } from '../lib/cn'
 // ساعة حيّة تُحدّث كل ثانية، مع التاريخ الهجري (أم القرى) والميلادي.
 // وضعان: «header» مضغوط لترويسة كل الصفحات، و«full» كبير للوحة التحكم.
 
-export function ClockWidget({ variant = 'header' }: { variant?: 'header' | 'full' }) {
+/** الساعة الحية — تُحدّث كل ثانية (يشاركها الترويسة وبطاقة الترحيب) */
+export function useNow(intervalMs = 1000): number {
   const [now, setNow] = useState(() => Date.now())
-
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 1000)
+    const id = window.setInterval(() => setNow(Date.now()), intervalMs)
     return () => window.clearInterval(id)
-  }, [])
+  }, [intervalMs])
+  return now
+}
+
+export function ClockWidget({ variant = 'header' }: { variant?: 'header' | 'full' }) {
+  const now = useNow()
 
   const time = formatTime(now)
   const hijri = formatHijri(now)

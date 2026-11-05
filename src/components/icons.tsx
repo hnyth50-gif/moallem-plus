@@ -251,6 +251,15 @@ export const IconGoogle = (p: IconProps) => (
   </Base>
 )
 
+/** مبنى مدرسة — جهة التعليم في بطاقة الترحيب */
+export const IconSchool = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M4 20h16" />
+    <path d="M6 20V9.5L12 5l6 4.5V20" />
+    <path d="M10 20v-5h4v5" />
+  </Base>
+)
+
 /** شعار يوتيوب مبسط خطي — مرفق فيديو */
 export const IconYouTube = (p: IconProps) => (
   <Base {...p}>
