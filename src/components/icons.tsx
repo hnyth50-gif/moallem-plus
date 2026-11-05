@@ -260,6 +260,22 @@ export const IconSchool = (p: IconProps) => (
   </Base>
 )
 
+/** شخص — ملف المعلم */
+export const IconProfile = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M5 20a7 7 0 0 1 14 0" />
+  </Base>
+)
+
+/** درع — الخصوصية والأمان */
+export const IconShield = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M12 3.5l7 2.5v5.5c0 4.4-2.9 7.6-7 9-4.1-1.4-7-4.6-7-9V6z" />
+    <path d="M9.2 12l2 2 3.6-4" />
+  </Base>
+)
+
 /** شعار يوتيوب مبسط خطي — مرفق فيديو */
 export const IconYouTube = (p: IconProps) => (
   <Base {...p}>

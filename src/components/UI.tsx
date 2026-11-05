@@ -216,6 +216,21 @@ export function PageHeader({
   )
 }
 
+/** عنوان قسم في الإعدادات — رقاقة أيقونة بلمسة ذهبية على نمط التصميم الجديد */
+export function SectionTitle({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-2.5 text-lg font-bold text-slate-900 dark:text-white">
+      <span
+        aria-hidden="true"
+        className="flex h-8 w-8 items-center justify-center rounded-lg border border-gold-400/40 bg-gold-200/30 text-brand-800 dark:bg-gold-400/10 dark:text-gold-300"
+      >
+        {icon}
+      </span>
+      {children}
+    </h2>
+  )
+}
+
 export function EmptyState({
   icon,
   title,

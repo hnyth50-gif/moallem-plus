@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useCloud } from '../state/CloudContext'
 import { useToast } from '../state/ToastContext'
-import { Badge, Button, Card, Field, Input } from './UI'
+import { Badge, Button, Card, Field, Input, SectionTitle } from './UI'
 import { IconCloud, IconGoogle } from './icons'
 import { formatRelative } from '../lib/format'
 
@@ -27,9 +27,7 @@ export function AuthPanel() {
     const configured = cloud.cloudAvailable
     return (
       <Card className="space-y-2">
-        <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
-          <IconCloud className="h-5 w-5 text-slate-400" /> الحساب والمزامنة السحابية
-        </h2>
+        <SectionTitle icon={<IconCloud className="h-4 w-4" />}>الحساب والمزامنة السحابية</SectionTitle>
         <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
           {configured
             ? 'تعذّر تحميل خدمة المزامنة الآن (ربما لست متصلًا) — بياناتك تُحفظ محليًا وتعمل دون اتصال كالمعتاد، وستتوفر المزامنة تلقائيًا عند عودة الاتصال.'
@@ -81,10 +79,10 @@ export function AuthPanel() {
     const syncLabel = cloud.syncState === 'idle' && cloud.lastSyncedAt ? `متزامنة — آخر مزامنة ${formatRelative(cloud.lastSyncedAt)}` : (SYNC_LABEL[cloud.syncState] ?? 'متزامنة')
     return (
       <Card className="space-y-4">
-        <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
-          <IconCloud className="h-5 w-5 text-brand-600 dark:text-brand-300" /> الحساب والمزامنة السحابية
+        <SectionTitle icon={<IconCloud className="h-4 w-4" />}>
+          الحساب والمزامنة السحابية
           <Badge>{syncLabel}</Badge>
-        </h2>
+        </SectionTitle>
         <p className="text-sm text-slate-600 dark:text-slate-300">
           مسجّل الدخول باسم <span dir="ltr" className="font-semibold">{cloud.user.email}</span> — بياناتك تُحفظ في السحابة وتُتاح على أي جهاز تسجل منه، وتبقى تعمل دون اتصال وتتزامن تلقائيًا عند العودة.
         </p>
@@ -102,9 +100,7 @@ export function AuthPanel() {
 
   return (
     <Card className="space-y-4">
-      <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
-        <IconCloud className="h-5 w-5 text-slate-400" /> الحساب والمزامنة السحابية
-      </h2>
+      <SectionTitle icon={<IconCloud className="h-4 w-4" />}>الحساب والمزامنة السحابية</SectionTitle>
       <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         أنشئ حسابًا لحفظ خططك وأنشطتك واختباراتك في السحابة بأمان — بيانات كل مستخدم معزولة عن غيره، وتتزامن بين أجهزتك تلقائيًا.
       </p>

@@ -6,8 +6,8 @@ import { estimateKb } from '../lib/storage'
 import { ACCENTS, applyAccent, restoreAccent, saveAccent } from '../lib/accent'
 import { BackgroundPicker } from '../components/BackgroundPicker'
 import { AuthPanel } from '../components/AuthPanel'
-import { Badge, Button, ConfirmDialog, Field, Input, Modal, PageHeader, Card } from '../components/UI'
-import { IconDownload, IconUpload, IconTrash, IconMoon, IconSun, IconRefresh, IconAlert } from '../components/icons'
+import { Badge, Button, ConfirmDialog, Field, Input, Modal, PageHeader, Card, SectionTitle } from '../components/UI'
+import { IconDownload, IconUpload, IconTrash, IconMoon, IconSun, IconRefresh, IconAlert, IconProfile, IconShield } from '../components/icons'
 import { formatPoints } from '../lib/format'
 
 // ============ الإعدادات ============
@@ -73,7 +73,7 @@ export function SettingsPage() {
       <div className="mx-auto max-w-3xl space-y-6">
         {/* الملف الشخصي */}
         <Card className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">ملف المعلم</h2>
+          <SectionTitle icon={<IconProfile className="h-4 w-4" />}>ملف المعلم</SectionTitle>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             تظهر هذه البيانات في ترويسة الورق المطبوع (الخطة/الاختبار/النشاط/البطاقة) فقط.
           </p>
@@ -96,7 +96,7 @@ export function SettingsPage() {
 
         {/* المظهر */}
         <Card className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">المظهر</h2>
+          <SectionTitle icon={<IconSun className="h-4 w-4" />}>المظهر</SectionTitle>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="اختيار المظهر">
             {(
               [
@@ -150,7 +150,12 @@ export function SettingsPage() {
                   }
                 >
                   <span
-                    className="h-4 w-4 rounded-full ring-1 ring-inset ring-black/10"
+                    className={
+                      'h-4 w-4 rounded-full ' +
+                      (accent.id === a.id
+                        ? 'ring-2 ring-gold-400 ring-offset-1 ring-offset-white dark:ring-offset-slate-900'
+                        : 'ring-1 ring-inset ring-black/10')
+                    }
                     style={{ backgroundColor: a.swatch }}
                     aria-hidden="true"
                   />
@@ -165,7 +170,7 @@ export function SettingsPage() {
 
         {/* أدوات البيانات */}
         <Card className="space-y-5">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">بياناتي وأدوات النسخ الاحتياطي</h2>
+          <SectionTitle icon={<IconDownload className="h-4 w-4" />}>بياناتي وأدوات النسخ الاحتياطي</SectionTitle>
 
           <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-900/40">
             <span className="text-slate-600 dark:text-slate-300">حجم بياناتك المحلية الحالية</span>
@@ -241,7 +246,7 @@ export function SettingsPage() {
 
         {/* الخصوصية */}
         <Card className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">الخصوصية والأمان</h2>
+          <SectionTitle icon={<IconShield className="h-4 w-4" />}>الخصوصية والأمان</SectionTitle>
           <ul className="list-disc space-y-1.5 ps-5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             <li>لا يوجد أي خادم أو حساب: يُحفظ كل شيء في متصفحك (localStorage) ولا يغادر جهازك أبدًا.</li>
             <li>لا يطلب التطبيق أي صلاحيات أو وصول إلى الميكروفون أو الكاميرا أو المجلدات.</li>
