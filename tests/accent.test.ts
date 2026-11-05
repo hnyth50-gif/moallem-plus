@@ -10,8 +10,8 @@ beforeEach(() => {
 })
 
 describe('لوحات الألوان', () => {
-  it('ستة ألوان معرفّة بعناوين عربية ومتغيرات كاملة 50-950', () => {
-    expect(ACCENTS.length).toBe(6)
+  it('سبعة ألوان معرفّة بعناوين عربية ومتغيرات كاملة 50-950', () => {
+    expect(ACCENTS.length).toBe(7)
     for (const a of ACCENTS) {
       expect(a.label.length).toBeGreaterThan(0)
       for (const shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]) {
@@ -20,9 +20,10 @@ describe('لوحات الألوان', () => {
     }
   })
 
-  it('الافتراضي هو الفيروزي المطابق للهوية الأصلية', () => {
-    expect(DEFAULT_ACCENT.id).toBe('teal')
-    expect(DEFAULT_ACCENT.vars['--brand-700']).toBe('15 118 110') // #0f766e
+  it('الافتراضي هو «زمرد ملكي» بهوية التصميم الجديد (أخضر داكن + ذهبي)', () => {
+    expect(DEFAULT_ACCENT.id).toBe('zomorud')
+    expect(DEFAULT_ACCENT.label).toBe('زمرد ملكي')
+    expect(DEFAULT_ACCENT.vars['--brand-900']).toBe('14 58 44') // #0e3a2c
   })
 
   it('accentById يرجع الافتراضي للمعرّفات المجهولة', () => {
@@ -63,6 +64,6 @@ describe('الحقن والحفظ والاسترجاع', () => {
     localStorage.setItem(ACCENT_KEY, 'مجهول')
     const restored = restoreAccent()
     expect(restored).toBe(DEFAULT_ACCENT)
-    expect(document.documentElement.style.getPropertyValue('--brand-700')).toBe('15 118 110')
+    expect(document.documentElement.style.getPropertyValue('--brand-700')).toBe('30 90 69') // #1e5a45 زمرد ملكي
   })
 })

@@ -18,6 +18,13 @@ export default {
           900: 'rgb(var(--brand-900) / <alpha-value>)',
           950: 'rgb(var(--brand-950) / <alpha-value>)',
         },
+        gold: {
+          200: 'rgb(var(--gold-200) / <alpha-value>)',
+          300: 'rgb(var(--gold-300) / <alpha-value>)',
+          400: 'rgb(var(--gold-400) / <alpha-value>)',
+          500: 'rgb(var(--gold-500) / <alpha-value>)',
+          600: 'rgb(var(--gold-600) / <alpha-value>)',
+        },
       },
       fontFamily: {
         sans: [

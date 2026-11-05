@@ -31,8 +31,13 @@ function buildShades(shades: Record<string, string>): Record<string, string> {
   return vars
 }
 
-// لوحات مستمدة من مقاييس Tailwind القياسية (الافتراضي = teal الحالي تمامًا)
+// لوحات الألوان — الافتراضي «زمرد ملكي» (الهوية الفاخرة: أخضر داكن + ذهبي)،
+// ثم بقية اللوحات المستمدة من مقاييس Tailwind القياسية
 const SHADES: Record<string, Record<string, string>> = {
+  zomorud: {
+    50: '#f1f7f3', 100: '#dfede5', 200: '#c0dbcd', 300: '#93c3ae', 400: '#61a78b',
+    500: '#3d8b6d', 600: '#2c7057', 700: '#1e5a45', 800: '#164938', 900: '#0e3a2c', 950: '#07271f',
+  },
   teal: {
     50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
     500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a', 950: '#042f2e',
@@ -60,6 +65,7 @@ const SHADES: Record<string, Record<string, string>> = {
 }
 
 const LABELS: Record<string, string> = {
+  zomorud: 'زمرد ملكي',
   teal: 'فيروزي',
   blue: 'أزرق',
   violet: 'بنفسجي',

@@ -8,6 +8,7 @@ import { Badge, Button, Card, DemoBadge, PageHeader, EmptyState, IconBadge } fro
 import { ClockCard } from '../components/ClockWidget'
 import { IconPlan, IconActivity, IconQuiz, IconCards, IconPlus, IconSparkles, IconAlert } from '../components/icons'
 import { DocIcon, DocKindBadge } from '../components/DocListPage'
+import { GoldFlourish } from '../components/GoldFlourish'
 import type { ActivityDoc, PlanDoc, QuizDoc, ThinkingCard } from '../lib/types'
 
 // ============ لوحة التحكم ============
@@ -66,10 +67,13 @@ export function Dashboard() {
 
   return (
     <>
-      <PageHeader
-        title={`${greeting()}${name ? `، ${name}` : ' أيها المعلم'} 👋`}
-        subtitle="مساحتك الموّحدة لإعداد الدروس — كل شيء يعمل على جهازك دون اتصال."
-      />
+      <div className="relative">
+        <GoldFlourish className="pointer-events-none absolute -top-3 left-0 hidden w-44 sm:block" />
+        <PageHeader
+          title={`${greeting()}${name ? `، ${name}` : ' أيها المعلم'} 👋`}
+          subtitle="مساحتك الموّحدة لإعداد الدروس — كل شيء يعمل على جهازك دون اتصال."
+        />
+      </div>
 
       {/* الساعة والتاريخ الهجري والميلادي */}
       <ClockCard className="mb-6" />
