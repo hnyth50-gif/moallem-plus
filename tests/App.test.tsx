@@ -47,6 +47,18 @@ describe('الصفحة الرئيسية', () => {
   })
 })
 
+describe('تنقل الجوال (الشريط السفلي)', () => {
+  it('شريط سفلي بخمس اختصارات (الرئيسية، الخطط، الأنشطة، الاختبارات، الإعدادات) بجانب الشريط الجانبي', () => {
+    render(<App />)
+    const sidebar = screen.getByRole('navigation', { name: 'التنقل الرئيسي' })
+    const bottom = screen.getByRole('navigation', { name: 'التنقل السفلي' })
+    expect(sidebar).toBeTruthy()
+    for (const label of ['الرئيسية', 'خطط الدروس', 'الأنشطة', 'الاختبارات', 'الإعدادات']) {
+      expect(within(bottom).getByRole('link', { name: new RegExp(label) })).toBeTruthy()
+    }
+  })
+})
+
 describe('الرئيسية الحية (بطاقة الترحيب وتغطية الأسبوع)', () => {
   it('بطاقة الترحيب تعرض الساعة الحية وحلقة التغطية وبطاقة خطط اليوم فارغة', () => {
     render(<App />)

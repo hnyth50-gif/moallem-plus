@@ -21,6 +21,15 @@ const NAV_ITEMS = [
   { to: '/settings', label: 'الإعدادات', icon: IconSettings },
 ]
 
+// اختصارات شريط التنقل السفلي في الجوال (الأكثر استخدامًا) — القائمة الكاملة في الجانبي والهمبرغر
+const MOBILE_NAV_ITEMS = [
+  { to: '/', label: 'الرئيسية', icon: IconHome, end: true },
+  { to: '/plans', label: 'خطط الدروس', icon: IconPlan },
+  { to: '/activities', label: 'الأنشطة', icon: IconActivity },
+  { to: '/quizzes', label: 'الاختبارات', icon: IconQuiz },
+  { to: '/settings', label: 'الإعدادات', icon: IconSettings },
+]
+
 function Logo() {
   return (
     <svg viewBox="0 0 64 64" className="h-9 w-9" role="img" aria-label="شعار معلّم بلس">
@@ -184,8 +193,47 @@ export function Layout({ children }: { children: ReactNode }) {
         )}
       </header>
 
-      {/* عمود المحتوى — مزاح بمقدار عرض الشريط الجانبي على الشاشات الكبيرة */}
-      <div className="lg:ps-64">
+      {/* شريط التنقل السفلي — شاشات الجوال فقط (اختصارات الأكثر استخدامًا) */}
+      <nav
+        aria-label="التنقل السفلي"
+        className="no-print fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 lg:hidden"
+      >
+        <div className="mx-auto grid max-w-lg grid-cols-5">
+          {MOBILE_NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                cn(
+                  'relative flex flex-col items-center gap-0.5 px-1 py-2.5 text-[10px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600',
+                  isActive
+                    ? 'text-brand-700 dark:text-gold-300'
+                    : 'text-slate-500 hover:text-brand-700 dark:text-slate-400 dark:hover:text-gold-300',
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {/* مؤشر ذهبي صغير فوق الوجهة النشطة */}
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'absolute top-0 h-0.5 w-8 rounded-full bg-gold-400 transition-opacity',
+                      isActive ? 'opacity-100' : 'opacity-0',
+                    )}
+                  />
+                  <item.icon />
+                  {item.label}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      </nav>
+
+      {/* عمود المحتوى — مزاح بمقدار عرض الشريط الجانبي على الشاشات الكبيرة، وبمسافة الشريط السفلي في الجوال */}
+      <div className="pb-16 lg:ps-64 lg:pb-0">
         <main id="main" className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
           {children}
         </main>
